@@ -5,16 +5,20 @@ const app = require('express')(),
     options = require('./lib/spec')(app),
     nunjucks = require('nunjucks'),
     join = require('path').join,
-    express = require('express');
+    express = require('express'),
+    socket = require("./lib/server/server");
 
 app.use(kraken(options));
 app.use('/assets',express.static('assets'));
 app.use('/assets',express.static('public'));
 
+
 nunjucks.configure('./public/templates', {
     autoescape: true,
     express: app
 });
+
+
 
 app.on('start', function () {
     console.log('Application ready to serve requests.');

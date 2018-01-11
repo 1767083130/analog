@@ -1,0 +1,29 @@
+<!DOCTYPE HTML>
+<html>
+    <head>
+        <title>socket_demo</title>
+        <script src="./js/jquery-1.8.2.js"></script>
+        <script src="/socket.io/socket.io.js"></script>
+        <script>
+            var io = io();
+            
+            
+            io.on("new message",function(data){
+                alert('data内容：');//+JSON.stringify(data)
+                alert(123);
+            });
+            io.emit('reqRealPrice',{msg:'得到数据'})
+            io.on('a1',function(data){
+                alert('###  ###进入a1。。。。。');
+                alert('data:'+JSON.stringify(data));
+            });
+
+        </script>
+    </head>
+<body>
+
+
+Your browser does not support the video tag.
+
+</body>
+</html>
