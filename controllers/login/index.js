@@ -12,6 +12,22 @@ module.exports = function (router) {
         res.render('login', model);
     });
 
+    
+    //register
+    router.get('/', function (req, res,next) {
+        let model = {};
+        //Include any error messages that come from the login process.
+        model.messages = req.flash('error');
+        res.render('register', model);
+        next();
+    });
+
+    router.post('/', function (req, res) {
+        // let model = {};
+        // //Include any error messages that come from the login process.
+        // model.messages = req.flash('error');
+        res.render('register', {});
+    });
     /**
      * Receive the login credentials and authenticate.
      * Successful authentications will go to /profile or if the user was trying to access a secured resource, the URL

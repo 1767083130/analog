@@ -1,3 +1,4 @@
+
 {% extends "layouts/master.html" %}
 
 {% block body %}
@@ -19,6 +20,7 @@
                         <td>
                             <input type="submit" value="Login"/>
                             <input type="hidden" name="_csrf" value="{{_csrf}}"/>
+                            <input type="butten" id="register0" value="register"/>
                         </td>
                         <td></td>
                     </tr>
@@ -27,4 +29,38 @@
             </fieldset>
         </form>
     </div>
+
+    <script src="../js/jquery-1.8.2.js" type="text/javascript"></script>
+    <script src="../js/lib/jquery.flexigrid.js" type="text/javascript"></script>
+    <script src="../js/common.js" type="text/javascript"></script>
+    <script type="text/javascript">
+        $(function(){ 
+
+            $("#register0").click(function(){ 
+                location.href = 'login/register';
+            });
+            $("#login0").click(function(e){
+                e.preventDefault();
+                var username = $("#username").val();
+                var password = $("#password").val();
+                var data = {"uname":username,"upwd":password};
+                $.ajax({ 
+                    url:'/login',
+                    type:'post',
+                    data: data,
+                    success: function(data,status){ 
+                        if(status == 'success'){ 
+                            location.href = 'test';
+                        }
+                    },
+                    error: function(data,status){ 
+                        if(status == 'error'){ 
+                            location.href = 'login';
+                        }
+                    }
+                });
+            });
+        });
+        </script>
+
 {% endblock %}
