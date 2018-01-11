@@ -11,7 +11,7 @@ var strategyModel = function () {
         userName: { type: String, required: true }, 
         isTest: { type: Boolean },
         openType: { type: String, default: "private" },
-        price: { type: String, default: "private" },
+        price: { type: String, default: "private" },//价格
         isValid: { type: Boolean, default: true },
 
         account: { 
@@ -39,8 +39,16 @@ var strategyModel = function () {
      * Methods
      */
     StrategySchema.methods = {
-
-
+        //  /**
+        //  * 添加方法
+        //  * @param userName 用户名
+        //  */
+        // getAddStrategy : function(userName,callback){
+        //     this.userName=userName.userName;
+            
+        //     return this.save(callback);
+        // },
+        
     }
     
     /**
@@ -61,6 +69,13 @@ var strategyModel = function () {
         getUserStrategy: function(userName){
             return this.findOne({ userName: userName,isValid: true }).exec();
         }
+       
+        // /**
+        //  * 更新
+        //  */
+        // getUpdateStrategy : function(userName){
+        //     return this.update(this.userName,userName)
+        // }
     };
 
     StrategySchema.plugin(paginate);

@@ -1,0 +1,29 @@
+[core]
+	repositoryformatversion = 0
+	filemode = false
+	bare = false
+	logallrefupdates = true
+	symlinks = false
+	ignorecase = true
+	autocrlf = false
+	
+[user]
+	name = kxy
+	email = 525285626@qq.com 
+	
+[remote "analog"]
+	url = https://github.com/1767083130/analog.git
+	fetch = +refs/heads/*:refs/remotes/analog/*
+[branch "master"]
+	remote = analog
+	merge = refs/heads/master
+	
+[credential]
+	helper = manager
+[merge]
+	tool = vimdiff
+[filter "lfs"]
+	required = true
+	clean = git-lfs clean -- %f
+	smudge = git-lfs smudge -- %f
+	process = git-lfs filter-process

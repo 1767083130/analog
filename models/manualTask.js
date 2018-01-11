@@ -40,6 +40,8 @@ var manualTaskModel = function () {
             return this.findOne({ _id })
                 .exec();
         }
+
+        
     };
 
     ManualTaskSchema.plugin(paginate);

@@ -18,6 +18,5 @@ new WebpackDevServer(webpack(config), {
     if (err) {
         console.log(err);
     }
-
     console.log('Listening at 127.0.0.1:8080');
 });

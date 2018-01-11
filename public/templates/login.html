@@ -2,7 +2,7 @@
 
 {% block body %}
     <div>
-        <form id="loginForm" method="post">
+        <form id="loginForm" action="" method="post">
             <fieldset>
                 <h2>Login</h2>
 
@@ -18,12 +18,12 @@
                     <tr>
                         <td>
                             <input type="submit" value="Login"/>
+                            <button> <a href="/login/prompt" id='prompt' name='prompt' >prompt</a>  </button>
                             <input type="hidden" name="_csrf" value="{{_csrf}}"/>
                         </td>
                         <td></td>
                     </tr>
                 </table>
-
             </fieldset>
         </form>
     </div>

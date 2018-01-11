@@ -1,0 +1,34 @@
+{% extends "layouts/master.html" %}
+<!-- <script src="/socket.io/socket.io.js"></script>
+<script>
+    var socket = io.connect("");
+    socket.on('conn',function(data){
+      socket.emit('dad',data)
+    })
+</script> -->
+{% block body %}
+<div>
+    <form id="prompt" action="/login/prompt" method="">
+        <fieldset>
+            <h2>提示</h2>
+
+            <table>
+                <tr>
+                    <td><label for="username">Login: </label></td>
+                    <td><input id="username" name="username" value="123" type="text"/></td>
+                </tr>
+                <tr>
+                    <td>
+                        <input type="submit" value="提交"/>
+                        
+                        <input type="hidden" name="_csrf" value="{{_csrf}}"/>
+                    </td>
+                    <td>
+                        
+                    </td>
+                </tr>
+            </table>
+        </fieldset>
+    </form>
+</div>
+{% endblock %}

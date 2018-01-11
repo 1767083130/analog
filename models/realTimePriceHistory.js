@@ -27,6 +27,7 @@ var realTimePriceHistoryModel = function () {
      * Methods
      */
     RealTimePriceHistorySchema.methods = {
+		//sells加到buys
         getPrices : function(){
             return this.buys.concat(this.sells);
         }

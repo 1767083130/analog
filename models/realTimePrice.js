@@ -3,8 +3,10 @@
  */
 'use strict';
 const mongoose = require('mongoose');
+const sio = require('socket.io-client');
 
 var realTimePriceModel = function () {
+    //实时价格图像
     const RealTimePriceSchema = mongoose.Schema({
         time: { type : Date, "default": Date.now() },
         site: { type: String },  
@@ -28,9 +30,12 @@ var realTimePriceModel = function () {
      * Methods
      */
     RealTimePriceSchema.methods = {
+        //sells加到buys
         getPrices : function(){
             return this.buys.concat(this.sells);
         }
+        
+
     }
     
     /**
@@ -48,8 +53,12 @@ var realTimePriceModel = function () {
         load: function (_id) {
             return this.findOne({ _id })
                 .exec();
-        }
+        },
+       
+        
+        
     };
+
 
     return mongoose.model('RealTimePrice', RealTimePriceSchema);
 };

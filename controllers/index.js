@@ -45,6 +45,14 @@ module.exports = function (router) {
         req.logout();
         res.redirect('/login');
     });
+    router.get('',function(req,res){
+        req.render('liaotianshi',{
+            userName:userName,
+            setting: JSON.stringify(setting|| []),
+            totalAmount: JSON.stringify(totalAmount || []),
+
+        })
+    })
 };
 
 

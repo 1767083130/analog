@@ -6,10 +6,12 @@ const app = require('express')(),
     nunjucks = require('nunjucks'),
     join = require('path').join,
     express = require('express');
+   
 
 app.use(kraken(options));
 app.use('/assets',express.static('assets'));
 app.use('/assets',express.static('public'));
+
 
 nunjucks.configure('./public/templates', {
     autoescape: true,

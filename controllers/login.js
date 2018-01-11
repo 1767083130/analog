@@ -1,7 +1,7 @@
 'use strict';
 const passport = require('passport');
 
-module.exports = function (router) {
+module.exports = function (router) {   
     /**
      * Display the login page. We also want to display any error messages that result from a failed login attempt.
      */
@@ -27,4 +27,5 @@ module.exports = function (router) {
         })(req, res);
 
     });
+    
 };
