@@ -1,0 +1,94 @@
+{% extends "layouts/master.html" %}
+
+{% block body %}
+<div>
+	
+        <h2>注册</h2>
+        <form action="" id="login-form" method="post">
+          <table>
+            <tr>
+              <td><input id="login-input1" type="text" placeholder="请输入用户名" name="username"></td>
+              <td><span id="login-span1"></span></td>
+            </tr>
+            <tr>
+              <td><input id="login-input2" type= "password" placeholder="请输入密码" name="password"> </td>
+              <td><span id="login-span2"></span> </td>
+            </tr>
+            <!-- <tr>  
+              <td><input  id="login-input3" type="password" placeholder="请确认密码" name="passes"> </td>
+              <td><span id="login-span3"></span> </td>
+            </tr>  -->
+            <tr>
+              <td><input type="submit" id="register1" value="注册"/> </td>
+              <td><input type="reset" id="reset" value="重置"/></td>
+          </tr>
+
+        </table>
+		</form>
+	</div>
+
+<script src="../js/jquery-1.8.2.js" type="text/javascript"></script>
+<script src="../js/lib/jquery.flexigrid.js" type="text/javascript"></script>
+<script src="../js/common.js" type="text/javascript"></script>
+	<script type="text/javascript">
+	$(function(){ 
+    
+		
+		$("#register1").click(function(e){
+            e.preventDefault();
+            var username = $("#username").val();
+			var password = $("#password").val();
+			var data = {"uname":username,"upwd":password};
+
+            $('#login-input1').blur(function () {
+        var result = /[a-zA-Z][a-zA-Z0-9_]{4,11}/
+        if (!result.test($('#login-input1').val())) {
+            layer.tips('用户名不合法,5-12位,前两位必须是字母', '#login-input1', {
+                tips: [2]
+            });
+        } else {
+          
+            $.get('/login1', $("#login-form").serialize()).then(function (data) {
+                if (data.data.length == 0) {
+    
+                } else {
+                    layer.tips('用户名不合法,5-12位,前两位必须是字母', '#login-input1', {
+                        tips: [2]
+                    });
+                  
+                }
+            })
+        }
+    })
+    //密码
+    $('#login-input2').blur(function () {
+        var result2 = /^[a-zA-Z]\w{5,17}$/
+        if (!result2.test($('#login-input2').val())) {
+            layer.tips('以字母开头，长度在6~18之间,只能包含字母、数字和下划线', '#login-input2', {
+                tips: [2]  
+            });
+        }
+    })
+			$.ajax({ 
+				url: '/register',
+				type: 'post',
+				data: data,
+				success: function(data,status){
+				    console.log('suc')
+                    location.href = 'login';
+					if(status == 'success'){ 
+						location.href = 'login';
+					}
+				},
+				error: function(data,err){
+                    console.log('er')
+						location.href = '/login';
+				}
+			}); 
+		
+		});
+	});
+</script>
+
+{% endblock %}
+
