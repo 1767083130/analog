@@ -1,29 +1,153 @@
 <!DOCTYPE HTML>
 <html>
-    <head>
-        <title>socket_demo</title>
-        <script src="./js/jquery-1.8.2.js"></script>
-        <script src="/socket.io/socket.io.js"></script>
-        <script>
-            var io = io();
-            
-            
-            io.on("new message",function(data){
-                alert('data内容：');//+JSON.stringify(data)
-                alert(123);
+
+<head>
+    <title>socket_demo</title>
+    <script src="./js/jquery-1.8.2.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+
+        const showMessage = function (message) {
+            document.querySelector('#trade').textContent += `\n${message}`;
+            document.querySelector('#trade').scrollTop = document.querySelector('#trade').scrollHeight;
+        };
+
+        var io = io('/market');
+
+
+        function subscribeExe() {
+            let state = $('#subscribe');
+            state.on('click', function () {
+
             });
-            io.emit('reqRealPrice',{msg:'得到数据'})
-            io.on('a1',function(data){
-                alert('###  ###进入a1。。。。。');
-                alert('data:'+JSON.stringify(data));
+        }
+
+        function pushExe() {
+
+        }
+
+        //'event':'addChannel','channel':'market','args':  {  symbol:  'btc#usd'  }
+
+        //event : addChannel(注册请求数据)/removeChannel(注销请求数据)/push(提交数据)  channel:'market'
+        function main() {
+
+            let _main = $('#main');
+            let v = _main.attr('v');                        //用户标识
+            let oprEnvent = '';
+            let oprCoin = '';
+            let oprCnl = '';                                //获得频道类型
+
+
+            $('input').on('click', function () {
+
+                let _self = $(this);                        //用来找订阅按钮
+
+                if (_self.attr('id') === 'subscribe') {
+                    if (Boolean(_self.attr('_subscribe'))) {
+                        _self.removeAttr('_subscribe');
+                        _self.val('取消订阅');
+                        _self.css({ 'background-color': 'pink' });
+                        _self.attr('event', 'addChannel');
+                    } else {
+                        _self.val('订阅');
+                        _self.css({ 'background-color': 'yellow' });
+                        _self.attr({ '_subscribe': 'true', 'event': 'removeChannel' });
+                    }
+
+                }
+
+                oprEnvent = _self.attr('event');
+                oprCoin = _self.attr('symb');
+                oprCnl = _main.attr('channel');             //获得频道类型
+
+                let reqData = { 'event': oprEnvent, 'channel': oprCnl, 'args': { symbol: oprCoin, id: v } };
+
+                alert('event提交：' + JSON.stringify(reqData));
+
+                io.emit('event', reqData);      //文章订阅请求  或者  推送最新行情请求
+
+                if (oprEnvent === 'addChannel') {
+                    addReaderSer();
+                    return;
+                }
+                if (oprEnvent === 'removeChannel') {
+                    removeReaderSer();
+                    return;
+                }
+            });
+        }
+
+        io.on('reconnection', function (data) {
+            console.log('与自己服务器重连');
+        });
+        io.on('disconnect', function () {
+            console.log('与自己服务器断开');
+        });
+
+        function addReaderSer() {                //弹出订阅是否成功
+
+            let symb = io.on('addData', function (data) {         //查看订阅信息是否成功添加
+                alert('addReaderSer ==> data:%s', data);
+                return data;
             });
 
-        </script>
-    </head>
+            symb
+                ? alert(` ${symb} 订阅成功！！`)
+                : alert(` ${symb} 没有订阅成功！！`);
+            return symb.crym;
+        }
+
+
+        function removeReaderSer() {                //取消订阅
+
+            let data = this.io.on('removeData', function (data) {
+                return data;
+            });
+
+            data
+                ? alert(`${data} 取消订阅`)
+                : alert(`${data} 系统异常`);
+        }
+
+
+        function pushDataSer() {                  //显示推送数据
+            io.on('pushData', function (data) {        //实时推送信息
+                let msg = '信息来自于：' + data.site + '      交易货币：' + data.symbol + '\n买入深度：' + data.bids + '       卖出深度：' + data.asks + ' \n交易时间：' + data.timestamp + ' ';
+                showMessage(msg);
+            });
+        }
+
+
+
+
+        $(function () {                       //启动
+            allExe();
+        });
+
+
+        function allExe() {                  //程序入口
+
+            main();
+            pushDataSer();
+
+        }
+    </script>
+</head>
+
 <body>
+    <nav id="main" channel="market" v=`${v}`></nav>
+    <!-- 频道  用户名 -->
+    <input id="subscribe" type="button" value=" 订阅 " symb="btc#usd" event='addChannel' _subscribe='true' style="background-color:yellow"
+    />
+    <!--oprType 标记事件是订阅  或者  提交 | symb触发事件的交易货币是{btc\etc} -->
+    <input type="button" value=" 最新信息 " event='push' />
 
 
-Your browser does not support the video tag.
+    <pre id="trade" style="height: 200px; overflow: scroll">
+    
+</pre> Your browser does not support the video tag.
+
 
 </body>
+
 </html>
