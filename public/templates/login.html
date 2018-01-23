@@ -10,17 +10,17 @@
                 <table>
                     <tr>
                         <td><label for="username">Login: </label></td>
-                        <td><input id="username" name="username" value="lcm" type="text"/></td>
+                        <td><input id="username" name="username" value="" type="text"/></td>
                     </tr>
                     <tr>
                         <td><label for="password">Password: </label></td>
-                        <td><input id="password" name="password" value="lcm" type="password"/></td>
+                        <td><input id="password" name="password" value="" type="password"/></td>
                     </tr>
                     <tr>
                         <td>
-                            <input type="submit" value="Login"/>
+                            <input type="submit" id="login0" value="Login"/>
                             <input type="hidden" name="_csrf" value="{{_csrf}}"/>
-                            <input type="butten" id="register0" value="register"/>
+                            <input type="button" id="register0" value="register"/>
                         </td>
                         <td></td>
                     </tr>
@@ -38,7 +38,7 @@
         $(function(){ 
 
             $("#register0").click(function(){ 
-                location.href = 'login/register';
+                location.href = '/register';
             });
             $("#login0").click(function(e){
                 e.preventDefault();
@@ -56,7 +56,7 @@
                     },
                     error: function(data,status){ 
                         if(status == 'error'){ 
-                            location.href = 'login';
+                            location.href = '/test';
                         }
                     }
                 });

@@ -3,7 +3,7 @@
 {% block body %}
 <div>
 	
-        <h2>注册信息</h2>
+        <h2>注册</h2>
         <form class="form"  method="post" action="">
           <table>
             <tr>
@@ -30,11 +30,11 @@
 	<script type="text/javascript">
 	$(function(){ 
 		
-		
 
+		
 		$("#register1").click(function(e){
             e.preventDefault();
-            var username = $("#username").val();
+      var username = $("#username").val();
 			var password = $("#password").val();
 			var data = {"uname":username,"upwd":password};
             
