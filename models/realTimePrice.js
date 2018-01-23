@@ -3,7 +3,7 @@
  */
 'use strict';
 const mongoose = require('mongoose');
-const sio = require('socket.io-client');
+
 
 var realTimePriceModel = function () {
     //实时价格图像
@@ -33,7 +33,10 @@ var realTimePriceModel = function () {
         //sells加到buys
         getPrices : function(){
             return this.buys.concat(this.sells);
-        }
+        },
+        tianjia : function(username){
+            return this.find({userName:userName});
+        },
         
 
     }
@@ -54,7 +57,6 @@ var realTimePriceModel = function () {
             return this.findOne({ _id })
                 .exec();
         },
-       
         
         
     };
