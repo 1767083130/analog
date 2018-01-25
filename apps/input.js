@@ -11,4 +11,4 @@ function remind(){
     
     
     
-//setInterval(remind,1  * 1000);
+setInterval(remind,1  * 1000);

@@ -5,9 +5,10 @@ const ReminderSettings = require('../models/reminderSettings');
 const ReminderInput = require('../models/reminderInout');
 const customConfig = require('../config/customConfig');
 mongoose.Promise = global.Promise;  
-const db = mongoose.createConnection("mongodb://127.0.0.1:27017/socialB2B")
-
-exports.remAdd = function(){
+mongoose.connection.openUri("mongodb://localhost/socialB2B")
+// const db = require('../lib/database'),
+// crypto = require('../lib/crypto');
+module.exports.remAdd = function(){
 
     let RealPrices = {
         site: "baidu",  //网站名称
@@ -17,6 +18,7 @@ exports.remAdd = function(){
       //timestamp: res.realPrice.time //long, 服务器时间戳
 
     }
+    
     let RemindUser = {
         userId:1,
         site : 'baidu',
@@ -24,7 +26,8 @@ exports.remAdd = function(){
         high : [1600],
         low : [1100],
         time : new Date()};
-    // let RemindAdd = new ReminderSettings();
+    
+    // const RemindAdd = new ReminderSettings();
     // RemindAdd.save(function(err){
     //     if(err){
     //         console.log(err);
@@ -39,8 +42,9 @@ exports.remAdd = function(){
         }
         console.log("ok")
     })
-    
-    console.log('1');
+   
+    console.log('12');
+                    
 }
 
 
