@@ -1,4 +1,8 @@
 （0）系统部署  npm install
 （1）如何启动网站 npm start 或 node server.js
+<<<<<<< HEAD
 （2）如何启动单元测试  mocha --recursive
  (3) DEMO: http://www.pkell.com
+=======
+（2）如何启动单元测试  mocha --recursive
+>>>>>>> 9bc8fcbbfdfe5fe8e9af8d80c0613530efd34352
