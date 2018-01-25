@@ -39,15 +39,7 @@ var strategyModel = function () {
      * Methods
      */
     StrategySchema.methods = {
-        //  /**
-        //  * 添加方法
-        //  * @param userName 用户名
-        //  */
-        // getAddStrategy : function(userName,callback){
-        //     this.userName=userName.userName;
-            
-        //     return this.save(callback);
-        // },
+        
         
     }
     
@@ -70,12 +62,7 @@ var strategyModel = function () {
             return this.findOne({ userName: userName,isValid: true }).exec();
         }
        
-        // /**
-        //  * 更新
-        //  */
-        // getUpdateStrategy : function(userName){
-        //     return this.update(this.userName,userName)
-        // }
+       
     };
 
     StrategySchema.plugin(paginate);

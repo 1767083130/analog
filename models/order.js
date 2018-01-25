@@ -104,23 +104,7 @@ var orderModel = function () {
                 return v.toString(16)
             })
         },
-        // /**
-        //  * 添加一个交易
-        //  * @param userName 用户名
-        //  * 
-        //  */
-        // getAddOrder : function (userName){
-        //     return this.find(this.userName,userName);
-            
-        //     if(count>1){
-        //         console.log('添加成功');
-        //         return count;
-        //     }else{
-        //         console.log('添加失败');
-        //         return 0;
-        //     }
-             
-        // },
+        
     };
     OrderSchema.plugin(paginate);
     return mongoose.model('Order', OrderSchema);

@@ -12,27 +12,9 @@ const Strategy = mongoose.model('strategy');//市场策略
 const user = mongoose.model('user');//转移策略
 module.exports = function(router){
     router.get('/',function(req,res){
-        let userName= req.user.userName;
-        let isTest,openType,price,isValid,account,addtional;
+        
         let model = {
-            // userName:userName,
-            // isTest:isTest || false,
-            // openType:JSON.stringify(openType||[]),
-            // price:JSON.stringify(price||[]),
-            // isValid:isValid|| false,
-            // account:{
-            //     totalPosition:JSON.stringify(totalPosition||[]),
-            //     coins:[{
-            //         coin:JSON.stringify(coin||[]),
-            //         position:JSON.stringify(position||[]),
-            //         priority:JSON.stringify(priority||[]),
-            //         priorityPosition:JSON.stringify(priorityPosition||[])
-            //     }]
-            // },
-            // addtional:{
-            //     strategyType:JSON.stringify(strategyType||[]),
-                
-            // }
+
         };
         
         model.messages = req.flash('error');
@@ -43,20 +25,9 @@ module.exports = function(router){
 
     router.post('/',function(req,res){
        
-        // sio.on('connection', function (socket) {
-        //     console.log('a user connected');
-        //     socket.on('connect', function () {
-        //         console.log('user connect');
-        //     });
-        //     socket.on('chat message', function(msg) {
-        //         console.log("msg:" + msg);
-        //         sio.emit('chat message', msg);
-        //     });
-        //});
+        
        
-      //console.log(req.body.totalAmount);
-       req.session.login = req.body.login;
-
+    
         res.render('liaotianshi',{
 
         });
@@ -64,8 +35,3 @@ module.exports = function(router){
     });
 }
 
-// sio.on('connection',function(socket){
-//     socket.on('login',function(data){
-//         socket.emit('login',data)
-//     })
-// })
