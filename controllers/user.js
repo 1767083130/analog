@@ -6,7 +6,7 @@ var EM = require('../lib/user/email-dispatcher');
 module.exports = function(app) {
 
     // main login page //
-	app.get('/', function(req, res){
+	app.get('/login', function(req, res){
 	    // check if the user's credentials are saved in a cookie //
 		if (req.cookies.user == undefined || req.cookies.pass == undefined){
 			res.render('login', { title: 'Hello - Please Login To Your Account' });
@@ -23,7 +23,7 @@ module.exports = function(app) {
 		}
 	});
 	
-	app.post('/', function(req, res){
+	app.post('/login', function(req, res){
 		AM.manualLogin(req.body['user'], req.body['pass'], function(e, o){
 			if (!o){
 				res.status(400).send(e);
