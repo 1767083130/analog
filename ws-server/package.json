@@ -1,0 +1,26 @@
+{
+  "name": "ws-server",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node --harmony index.js"
+  },
+  "dependencies": {
+    "bcrypt": "^0.8.7",
+    "co": "^4.6.0",
+    "decimal.js": "^7.1.0",
+    "md5": "^2.0.0",
+    "oauth20-provider": "^0.6.0",
+    "sha1": "^1.1.0",
+    "ws": "^4.0.0"
+  },
+  "devDependencies": {
+    "eslint": "^1.10.3",
+    "mocha": "^1.18.0",
+    "supertest": "^0.9.0"
+  },
+  "author": "",
+  "license": "ISC"
+}
