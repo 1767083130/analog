@@ -1,26 +1,57 @@
-﻿'use strict';
-
+'use strict';
 const fs = require('fs');
 const path = require('path');
-const co = require('co');
-const configUtil = require('./configUtil');
+const configUtil  = require('./configUtil');
 const siteConfigs = require('bitcoin-clients').clients;
+const SocketClient = require('./SocketClient');
+const co = require('co');
+const WebSocket = require('ws');
 
-class SocketClient{
-    /**
-     * 构造函数
-     * 
-     * @param {String} site 网站名称
-     * @param {String} type 类型。包括spot、futures两种
-     */
-    constructor(site,type){
-        if(!site){
-            throw new Error();
+const Server_Url = 'ws://localhost:8080/ws'
+
+let bridgeClient = new BridgeClient();
+bridgeClient.start();
+
+class BridgeClient {
+    constructor(){
+        this.clearLogs();
+        this.ws = null;
+    }
+
+    start(){
+        this.ws = new WebSocket(Server_Url);
+        this.ws.on('open', function open() {
+            console.log('连接server成功');
+            this.connectSites();
+        }.bind(this));
+    }
+
+    connectSites(options){
+        let channels = ['wallet','position','market'];   //todo  ['order','wallet','position','market']
+        let platforms = configUtil.getPlatforms();
+        for(let platform of platforms){
+            if(options && options.sites && options.sites.indexOf(platform.site) == -1){
+                continue;
+            }
+            if(!platform.isValid){
+                continue;
+            }
+
+            if(['bitfinex','okex'].indexOf(platform.site) == -1 ){ //todo 'okex', 'bitfinex','bitmex',
+                continue;
+            }
+            console.log(`正在连接交易网站${platform.site}...`);
+
+            if(platform.clients){
+                if(platform.clients.client && platform.clients.client.supported){
+                    this.connectSite(platform.site,'spot',channels);
+                }
+
+                if(platform.clients.futuresClient && platform.clients.futuresClient.supported){
+                    this.connectSite(platform.site,'futures',channels);
+                }               
+            }
         }
-
-        this.site = site;
-        this.type = type;
-        this.client = this._getClient(site,type);
     }
 
     /**
@@ -28,9 +59,11 @@ class SocketClient{
      *
      * @channels {Array} 需要订阅的消息类型，默认为['order','wallet','position','market']
      */
-    connect(channels){
-        if(!this.client){
-            console.error(`网站${this.site}不支持类型为${this.type}的socket`);
+    connectSite(site,type, channels){
+        let client = this._getClient(site,type);
+
+        if(!client){
+            console.error(`网站${site}不支持类型为${type}的socket`);
             return;
         }
 
@@ -40,7 +73,7 @@ class SocketClient{
 
         //连接服务器并在成功后订阅消息通道
         let errListener;
-        this.client.connect(function(e){
+        client.connect(function(e){
             console.log(`成功连接交易网站${this.site} ${this.type}.`);
             for(let channel of channels){
                 let options = {
@@ -49,15 +82,15 @@ class SocketClient{
                     symbol: this.type == 'spot' ? '*' : "_",
                     params: []
                 };
-                this.client.send(options);
+                client.send(options);
             }
 
-            this.client.on('pong',function(){
+            client.on('pong',function(){
                 console.log(`${this.site} ${this.type} pong`);
             }.bind(this));
     
             //处理返回的数据
-            this.client.on('message',function(res){
+            client.on('message',function(res){
                 co(function *(){
                     // if(res.type != 'market'){
                     //     this.log(this.site,res);
@@ -86,12 +119,12 @@ class SocketClient{
             }.bind(this));
     
             //有可能是在重新连接的时候触发connect事件，这时先前注册的错误处理事件已经失效，需要重新注册
-            this.client.off('error',errListener);
-            this.client.on('error',this._onSocketError.bind(this));
+            client.off('error',errListener);
+            client.on('error',this._onSocketError.bind(this));
         }.bind(this));
         
         //有可能在没有连接成功前触发错误，这时也需要进行错误处理
-        this.client.on('error',errListener = this._onSocketError.bind(this));
+        client.on('error',errListener = this._onSocketError.bind(this));
     }
 
     _onSocketError(err){
@@ -107,42 +140,42 @@ class SocketClient{
             return;
         }
 
-        //console.log(JSON.stringify(e))
-        for(let detail of e.data){
-            // detail.site = detail.site.toLowerCase();
-            // detail.symbol = detail.symbol.toLowerCase();
-            realTimePrice.cacheRealPrice(detail);
-            if(detail.site == 'okex'){
-                
-            }
+        let items = [];
+        for(let item of e.data){
+            items.push({
+                site: item.site,
+                symbol: item.symbol,
+                bids: item.buys,
+                asks: item.sells,
+                timestamp: +item.timestamp || +new Date()
+            });
         }
+        
+        ws.send({'event':'push','channel':'market','data': items} ,err => {}); 
     }
 
     * orders_reached(e){
-        try{
-            //TODO
-            //yield* order.syncOrder(e.order,e.outerOrder);
-        }catch(err){
-            console.error(err);
+        if(!e || !e.data){
+            return;
         }
+
+        ws.send({'event':'push','channel':'order','data': e.data} ,err => {}); 
     }
 
     * positions_reached(e){
-        try{
-            //yield* order.syncOrder(e.order,e.outerOrder);
-        }catch(err){
-            console.error(err);
+        if(!e || !e.data){
+            return;
         }
+
+        ws.send({'event':'push', 'channel':'market','data': e.data} ,err => {}); 
     }
 
-
     * wallet_reached(e){
-        //todo
-//        try{
-//            yield* order.syncOrder(e.order,e.outerOrder);
-//        }catch(err){
-//            console.error(err);
-//        }
+        if(!e || !e.data){
+            return;
+        }
+
+        ws.send({'event':'push','channel':'wallet','data': e.data} ,err => {}); 
     }
 
     /**
@@ -196,6 +229,20 @@ class SocketClient{
         });
     }
 
+    clearLogs(){
+        let dir = path.join(__dirname,'logs');
+        fs.readdirSync(dir).forEach(function(item){
+            let stat = fs.lstatSync(path.join(dir, item));
+            if(stat.isDirectory()){
+                return;
+            }
+            fs.unlinkSync(path.join(dir, item));
+        });
+    }
+
 }
 
-module.exports = SocketClient
+
+
+
+
