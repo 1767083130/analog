@@ -1,5 +1,5 @@
 ﻿1.1 发送请求
-    请求数据格式为：{'event':'addChannel','channel':'channelValue','data':{'api_key':'value1','sign':'value2'}} 
+    请求数据格式为：{'event':'addChannel','channel':'channelValue','parameters':{'api_key':'value1','sign':'value2'}} 
     其中event: addChannel(注册请求数据)/removeChannel(注销请求数据)/push(提交数据) 
     channel：提供请求数据类型 
     data 参数为选填参数，
@@ -11,7 +11,7 @@
     其中签名和数据压缩功能暂时不实现
 
 1.2 服务器响应
-    返回数据格式为： [{"channel":"channel","success":"","errorcode":"","data":{}}, {"channel":"channel","success":"","errorcode":1,"data":{}}] 
+    返回数据格式为： [{"channel":"channel","success":"","errorcode":"","parameters":{}}, {"channel":"channel","success":"","errorcode":1,"data":{}}] 
     channel:请求的数据类型
     success:true成功,false失败(用于WebSocket 交易API)
     data：返回结果数据
@@ -31,12 +31,12 @@
 WebSocket API
 
 （1）获取市场深度
-    客户端订阅数据：websocket.send(" {'event':'addChannel','channel':'market','data': { symbol: 'btc#usd' } } ");
-    客户端发送数据：websocket.send(" {'event':'push','channel':'market','data': { site:"qq", symbol: 'btc#usd',bids: [[19000,1.02],[19899,0.95],[19888.5,0.87]] } } "); 
+    客户端订阅数据：websocket.send(" {'event':'addChannel','channel':'market','parameters': { symbol: 'btc#usd' } } ");
+    客户端发送数据：websocket.send(" {'event':'push','channel':'market','parameters': { depths: [{ site:"qq", symbol: 'btc#usd',bids: [[19000,1.02],[19899,0.95],[19888.5,0.87]] }]} } "); 
 
     示例
     # Request 
-    {'event':'addChannel','channel':'market','data': { symbol: 'btc#usd' } }
+    {'event':'addChannel','channel':'market','parameters': { symbol: 'btc#usd' } }
     其中， symbol为交易品种，如果为"*",表示全部交易品种
      
     # Response

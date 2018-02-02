@@ -1,6 +1,6 @@
 
 cd ws-server
 
-(1) 运行服务器端  node --harmony server
-(2) 运行桥接客户端 node --harmony bridgeClient
-(3) 客户端DEMO node --harmony clientDemo
+(1) 运行服务器端  node server
+(2) 运行桥接客户端 node bridgeClient
+(3) 客户端DEMO node clientDemo

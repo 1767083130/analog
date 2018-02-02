@@ -4,32 +4,60 @@ const path = require('path');
 const configUtil  = require('./configUtil');
 const siteConfigs = require('bitcoin-clients').clients;
 const co = require('co');
-const WebSocket = require('ws');
+const Client = require('./Client');
+const debug = require('debug')('ws-server:bridgeClient');
 
 const Server_Url = 'ws://localhost:8080/ws';
 
 class BridgeClient {
-    constructor(){
+    constructor(options){
         //this.clearLogs();
+        options = options || {};
         this.ws = null;
+        this.options = options;
+
+        this._isReconnecting = false;
+        this._isClosing = false;
+        this._reconnectDelay = options.reconnectDelay || 2000;
+        this._autoReconnect = (options.autoReconnect === undefined ? true : options.autoReconnect);
     }
 
     start(){
-        this.ws = new WebSocket(Server_Url);
+        this.ws = new Client({ appKey: "a", appSecret: "b", url: Server_Url});
+        this.ws.connect();
         this.ws.on('open', function open() {
+            this._isReconnecting = false;
             console.log('连接server成功');
-            this.connectSites();
+            this.connectSites(this.options);
+            setInterval(function(){
+                this.ws.send({now: + new Date()});
+            }.bind(this),50)
         }.bind(this));
 
-        this.ws.on('close', _onWsClose.bind(this));
-        this.ws.on('error',_onWsError.bind(this));
+        this.ws.on('message',function(res){
+            debug(res);
+        });
+
+        this.ws.on('close', this._onWsClose.bind(this));
+        this.ws.on('error', this._onWsError.bind(this));
+    }
+    
+    /**
+     * 重新连接
+     */
+    reconnect () {
+        if(!this._isReconnecting){
+            this.start()
+        }
+
+        this._isReconnecting = true;
     }
 
     _onWsClose(){
+        return;
         this.ws = null
         //this._isClosing = false // used to block reconnect on direct close() call
         this._isReconnecting = false
-        this.emit('close')
         debug('ws connection closed')
     
         if (this._autoReconnect && !this._isClosing) {
@@ -40,6 +68,7 @@ class BridgeClient {
 
     _onWsError(err){
         debug('error: %j', err)
+
         if(err.code){
             switch (err.code) {
                 case 'ECONNREFUSED':
@@ -60,7 +89,7 @@ class BridgeClient {
     }
 
     connectSites(options){
-        let channels = ['wallet','position','market'];   //todo  ['order','wallet','position','market']
+        let channels = options.channels || ['order','wallet','position','market'];  
         let platforms = configUtil.getPlatforms();
         for(let platform of platforms){
             if(options && options.sites && options.sites.indexOf(platform.site) == -1){
@@ -124,6 +153,7 @@ class BridgeClient {
     
             //处理返回的数据
             client.on('message', function(res){ 
+                //console.log(res);
                 switch(res.channel){
                 case 'order':
                     this.orders_reached(res);
@@ -165,7 +195,7 @@ class BridgeClient {
             });
         }
 
-        this.ws.send(JSON.stringify({'event':'push','channel':'market','data': items }),this._onSendDataError); 
+        this.ws.send({'event':'push','channel':'market','parameters': { depths: items } },this._onSendDataError); 
     }
 
     orders_reached(e){
@@ -173,7 +203,7 @@ class BridgeClient {
             return;
         }
 
-        this.ws.send(JSON.stringify({'event':'push','channel':'order','data': e.data}),this._onSendDataError); 
+        this.ws.send({'event':'push','channel':'order','data': e.data},this._onSendDataError); 
     }
 
     positions_reached(e){
@@ -181,7 +211,7 @@ class BridgeClient {
             return;
         }
 
-        this.ws.send(JSON.stringify({'event':'push', 'channel':'market','data': e.data}),this._onSendDataError); 
+        this.ws.send({'event':'push', 'channel':'market','data': e.data},this._onSendDataError); 
     }
 
     wallet_reached(e){
@@ -189,7 +219,7 @@ class BridgeClient {
             return;
         }
 
-        this.ws.send(JSON.stringify({'event':'push','channel':'wallet','data': e.data}),this._onSendDataError); 
+        this.ws.send({'event':'push','channel':'wallet','data': e.data},this._onSendDataError); 
     }
 
     _onSocketError(err){

@@ -18,7 +18,7 @@ class Server {
       path: '/ws'
     });
 
-    this.wss.on('connection', this._onConnection);
+    this.wss.on('connection', this._onConnection.bind(this));
 
     let noop = function() {}
     const interval = setInterval(function ping() {
@@ -40,19 +40,27 @@ class Server {
       ws.isAlive = true;
     });
 
-    ws.on('message', function incoming(res) {
-      switch(data.event){
+    ws.on('message', function(res){
+      try {
+          res = JSON.parse(res);
+      } catch (e) {
+          //this.emit('error', 'Unable to parse incoming data:', res);
+          return;
+      }
+
+      switch(res.event){
       case 'addChannel':
-        //{'event':'addChannel','channel':'channelValue','data':{'api_key':'value1','sign':'value2'}} 
-        this.addChannelItem(ws,res);
+        //{'event':'addChannel','channel':'channelValue','parameters':{'api_key':'value1','sign':'value2'}} 
+        
+        this.addChannelItem(res,ws);
         break;
       case 'removeChannel':
         //{'event':'removeChannel','channel':'channelValue' }
-        this.removeChannel(ws,res.channel);
+        this.removeChannel(res.channel,ws);
         break;
       case 'push':
-        //{'event':'push','channel':'market','data': { site:"qq", symbol: 'btc#usd',bids: [[19000,1.02],[19899,0.95],[19888.5,0.87]] } }
-        this.pushData(ws,res);
+        //{'event':'push','channel':'market','parameters':{ depths: [{ site:"qq", symbol: 'btc#usd',bids: [[19000,1.02],[19899,0.95],[19888.5,0.87]] }]} }
+        this.pushData(res,this.clientsMap);
         break;
       }
     }.bind(this));
@@ -71,8 +79,8 @@ class Server {
     });
   };
 
-  addChannelItem(ws,res){
-    //res数据格式： {'event':'addChannel','channel':'market','data': { symbol: 'btc#usd' } } 
+  addChannelItem(res,ws){
+    //res数据格式： {'event':'addChannel','channel':'market','parameters': { symbol: 'btc#usd' } } 
     let mapItem = this.getMapItem(ws,true);
     if(!mapItem.channels){
       mapItem.channels = [];
@@ -85,22 +93,22 @@ class Server {
     }
 
     switch(res.channel){
-      case 'account':
-        channelLib.account.addChannelItem(res.data,channel);
-        break;
+      // case 'wallet':
+      //   channelLib.wallet.addChannelItem(res.parameters,channel);
+      //   break;
       case 'market':
-        channelLib.market.addChannelItem(res.data,channel);
+        channelLib.market.addChannelItem(res.parameters,channel);
         break;
-      case 'order':
-        channelLib.order.addChannelItem(res.data,channel);
-        break;
-      case 'position':
-        channelLib.position.addChannelItem(res.data,channel);
+      // case 'order':
+      //   channelLib.order.addChannelItem(res.parameters,channel);
+      //   break;
+      // case 'position':
+      //   channelLib.position.addChannelItem(res.parameters,channel);
         break;
     }
   }
 
-  removeChannel(ws,channelName){
+  removeChannel(channelName,ws){
     let mapItem = this.getMapItem(ws);
     if(!mapItem || !mapItem.channels){
       return;
@@ -112,31 +120,41 @@ class Server {
     }
   }
 
-  pushData(res){
+  pushData(res,ws){
     if(!res.channel){
       return;
     }
 
     switch(res.channel){
-      case 'account':
-        channelLib.account.pushData(res.data);
-        break;
+      // case 'account':
+      //   channelLib.account.pushData(res,this.clientsMap);
+      //   break;
       case 'market':
-        channelLib.market.pushData(res.data,clientsMap);
+        channelLib.market.pushData(res,this.clientsMap);
         break;
-      case 'order':
-        channelLib.order.pushData(res.data);
-        break;
-      case 'position':
-        channelLib.position.pushData(res.data);
-        break;
+      // case 'order':
+      //   channelLib.order.pushData(res,this.clientsMap);
+      //   break;
+      // case 'position':
+      //   channelLib.position.pushData(res,this.clientsMap);
+      //   break;
     }
   }
 
+  getChannel(channelName,ws){
+    let mapItem = this.getMapItem(ws,true);
+    if(!mapItem || !mapItem.channels){
+      return;
+    }
+
+    let channelItem = mapItem.channels.find(p => p.channel == channelName);
+    return channelItem;
+  }
+
   getMapItem(ws,autoNew){
-    let mapItem = clientsMap.get(ws);
+    let mapItem = this.clientsMap.get(ws);
     if(!mapItem && autoNew){
-        mapItem = clientsMap.set(ws,{});
+        mapItem = this.clientsMap.set(ws,{});
     }
 
     return mapItem;
