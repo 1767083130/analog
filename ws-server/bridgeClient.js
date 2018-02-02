@@ -3,18 +3,14 @@ const fs = require('fs');
 const path = require('path');
 const configUtil  = require('./configUtil');
 const siteConfigs = require('bitcoin-clients').clients;
-const SocketClient = require('./SocketClient');
 const co = require('co');
 const WebSocket = require('ws');
 
-const Server_Url = 'ws://localhost:8080/ws'
-
-let bridgeClient = new BridgeClient();
-bridgeClient.start();
+const Server_Url = 'ws://localhost:8080/ws';
 
 class BridgeClient {
     constructor(){
-        this.clearLogs();
+        //this.clearLogs();
         this.ws = null;
     }
 
@@ -24,6 +20,43 @@ class BridgeClient {
             console.log('连接server成功');
             this.connectSites();
         }.bind(this));
+
+        this.ws.on('close', _onWsClose.bind(this));
+        this.ws.on('error',_onWsError.bind(this));
+    }
+
+    _onWsClose(){
+        this.ws = null
+        //this._isClosing = false // used to block reconnect on direct close() call
+        this._isReconnecting = false
+        this.emit('close')
+        debug('ws connection closed')
+    
+        if (this._autoReconnect && !this._isClosing) {
+          setTimeout(this.reconnect.bind(this), this._reconnectDelay)
+        }
+        this._isClosing = false
+    }
+
+    _onWsError(err){
+        debug('error: %j', err)
+        if(err.code){
+            switch (err.code) {
+                case 'ECONNREFUSED':
+                case 'ENOENT':
+                case 'ETIMEDOUT':
+                case 'ENOTFOUND':
+                    this._open = false;
+                    this._ws = null;
+                    if (this._autoReconnect && !this._isClosing && !this._isReconnecting) {
+                        console.log('正在尝试重新与网站bitfinex进行连接...');
+                        setTimeout(this.reconnect.bind(this), this._reconnectDelay)
+                    }
+                    break;
+                default:
+                    break;
+            }
+        }
     }
 
     connectSites(options){
@@ -37,7 +70,7 @@ class BridgeClient {
                 continue;
             }
 
-            if(['bitfinex','okex'].indexOf(platform.site) == -1 ){ //todo 'okex', 'bitfinex','bitmex',
+            if(['okex', 'bitfinex'].indexOf(platform.site) == -1 ){ //todo 'okex', 'bitfinex','bitmex',
                 continue;
             }
             console.log(`正在连接交易网站${platform.site}...`);
@@ -68,54 +101,43 @@ class BridgeClient {
         }
 
         if(!channels){
-            channels = ['order','position','market','wallet'];
+            channels = ['market','order','position','wallet']; 
         }
 
         //连接服务器并在成功后订阅消息通道
         let errListener;
         client.connect(function(e){
-            console.log(`成功连接交易网站${this.site} ${this.type}.`);
+            console.log(`成功连接交易网站${site} ${type}.`);
             for(let channel of channels){
                 let options = {
                     event: "addChannel",
                     channel: channel,
-                    symbol: this.type == 'spot' ? '*' : "_",
+                    symbol: type == 'spot' ? '*' : "_",
                     params: []
                 };
                 client.send(options);
             }
 
             client.on('pong',function(){
-                console.log(`${this.site} ${this.type} pong`);
+                console.log(`${site} ${type} pong`);
             }.bind(this));
     
             //处理返回的数据
-            client.on('message',function(res){
-                co(function *(){
-                    // if(res.type != 'market'){
-                    //     this.log(this.site,res);
-                    //     console.log(JSON.stringify(res));
-                    // }
-                    //console.log(JSON.stringify(res));
-                        
-                    switch(res.channel){
-                    case 'order':
-                        yield* this.orders_reached(res);
-                        break;
-                    case 'position':
-                        yield* this.positions_reached(res);
-                        break;
-                    case 'market':
-                        yield* this.market_reached(res);
-                        break;
-                    case 'wallet':
-                        yield* this.wallet_reached(res);
-                        break;
-                    }
-                }.bind(this)).catch(function(e){
-                    throw e;
-                });
-    
+            client.on('message', function(res){ 
+                switch(res.channel){
+                case 'order':
+                    this.orders_reached(res);
+                    break;
+                case 'position':
+                    this.positions_reached(res);
+                    break;
+                case 'market':
+                    this.market_reached(res);
+                    break;
+                case 'wallet':
+                    this.wallet_reached(res);
+                    break;
+                }
             }.bind(this));
     
             //有可能是在重新连接的时候触发connect事件，这时先前注册的错误处理事件已经失效，需要重新注册
@@ -127,15 +149,7 @@ class BridgeClient {
         client.on('error',errListener = this._onSocketError.bind(this));
     }
 
-    _onSocketError(err){
-        if(err.message || err.stack){
-            console.error(`${this.site} ${this.type} 出错啦! ` + err.message + '\n' + err.stack);
-         } else {
-            console.error(`${this.site} ${this.type} 出错啦! ` +  JSON.stringify(err));
-         }
-    }
-
-    * market_reached(e){
+    market_reached(e){
         if(!e || !e.data){
             return;
         }
@@ -150,32 +164,46 @@ class BridgeClient {
                 timestamp: +item.timestamp || +new Date()
             });
         }
-        
-        ws.send({'event':'push','channel':'market','data': items} ,err => {}); 
+
+        this.ws.send(JSON.stringify({'event':'push','channel':'market','data': items }),this._onSendDataError); 
     }
 
-    * orders_reached(e){
+    orders_reached(e){
         if(!e || !e.data){
             return;
         }
 
-        ws.send({'event':'push','channel':'order','data': e.data} ,err => {}); 
+        this.ws.send(JSON.stringify({'event':'push','channel':'order','data': e.data}),this._onSendDataError); 
     }
 
-    * positions_reached(e){
+    positions_reached(e){
         if(!e || !e.data){
             return;
         }
 
-        ws.send({'event':'push', 'channel':'market','data': e.data} ,err => {}); 
+        this.ws.send(JSON.stringify({'event':'push', 'channel':'market','data': e.data}),this._onSendDataError); 
     }
 
-    * wallet_reached(e){
+    wallet_reached(e){
         if(!e || !e.data){
             return;
         }
 
-        ws.send({'event':'push','channel':'wallet','data': e.data} ,err => {}); 
+        this.ws.send(JSON.stringify({'event':'push','channel':'wallet','data': e.data}),this._onSendDataError); 
+    }
+
+    _onSocketError(err){
+        if(err.message || err.stack){
+            console.error(`${this.site} ${this.type} 出错啦! ` + err.message + '\n' + err.stack);
+         } else {
+            console.error(`${this.site} ${this.type} 出错啦! ` +  JSON.stringify(err));
+         }
+    }
+
+    _onSendDataError(err){
+        if(err){
+            console.log('系统发生错误：' + JSON.stringify(err));
+        }
     }
 
     /**
@@ -239,8 +267,10 @@ class BridgeClient {
             fs.unlinkSync(path.join(dir, item));
         });
     }
-
 }
+
+let bridgeClient = new BridgeClient();
+bridgeClient.start();
 
 
 

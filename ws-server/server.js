@@ -19,11 +19,28 @@ class Server {
     });
 
     this.wss.on('connection', this._onConnection);
+
+    let noop = function() {}
+    const interval = setInterval(function ping() {
+      this.wss.clients.forEach(function each(ws) {
+        if (ws.isAlive === false) return ws.terminate();
+    
+        ws.isAlive = false;
+        ws.ping(noop);
+      });
+    }.bind(this), 10000);
   }
 
-  _onConnection(ws){
+  _onConnection(ws,req){
+    const ip = req.connection.remoteAddress;
+    console.log('客户端连接成功：' + ip);
+
+    ws.isAlive = true;
+    ws.on('pong', function(){
+      ws.isAlive = true;
+    });
+
     ws.on('message', function incoming(res) {
-      console.log('收到信息：' + JSON.stringify(res));
       switch(data.event){
       case 'addChannel':
         //{'event':'addChannel','channel':'channelValue','data':{'api_key':'value1','sign':'value2'}} 
@@ -39,6 +56,8 @@ class Server {
         break;
       }
     }.bind(this));
+
+    ws.on('error', err => console.log(`客户端 ${ip} errored: ${JSON.stringify(err)}`));
   }
 
   // Broadcast to all.

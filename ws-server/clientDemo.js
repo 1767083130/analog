@@ -29,3 +29,7 @@ ws.on('open', function open() {
 ws.on('message', function incoming(data) {
     console.log(data);
 });
+
+ws.on('close', function close() {
+  console.log('disconnected');
+});
