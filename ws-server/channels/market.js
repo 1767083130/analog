@@ -7,7 +7,7 @@ const Market_ChannelName = "market";
 let market = new class {
     
     addChannelItem(data,channel){
-        //res数据格式:  {'event':'addChannel','channel':'channelValue','parameters':{'api_key':'value1','sign':'value2'}} 
+        //data数据格式:  {site: "okex",symbol: "btc#usd"} 
         //channel数据格式：{channel: "market", items:[ { site: "",symbols: []} ]}
     
         if(channel.items){

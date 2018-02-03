@@ -9,6 +9,10 @@ const debug = require('debug')('ws-server:bridgeClient');
 
 const Server_Url = 'ws://localhost:8080/ws';
 
+/**
+ * 桥接客户端
+ * //TODO 断网后系统自动连接暂时没有实现
+ */
 class BridgeClient {
     constructor(options){
         //this.clearLogs();
