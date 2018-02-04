@@ -7,18 +7,11 @@ const ChannelName = "market";
 let market = new class {
 
     pushData(res){
-        //data数据格式: {
-        //     site: "baidu",  //网站名称
-        //     symbol: "btc#usd", //交易品种，如果为"*",则表示订阅如 "btc#usd"表示使用美元兑换比特币的交易品种
-        //     bids: [[19000,1.02],[19899,0.95],[19888.5,0.87]],   //array, 买单深度,已按照价格降序排列 数组索引(string) 0 价格, 1 量(张)
-        //     asks: [[19100,1.03],[19105,0.98]]   //array,卖单深度,已按照价格升序排列 数组索引(string) 0 价格, 1 量(张)
-        //     timestamp: res.realPrice.time //long, 服务器时间戳
-        // }
-        if(!res || !res.parameters || !res.parameters.depths){
+        if(!res || !res.data){
             return;
         }
 
-        let depths = res.parameters.depths,
+        let depths = res.data,
             newDepths = [];
         for(let depth of depths){
             let site = depth.site;
@@ -42,8 +35,18 @@ let market = new class {
         }
     }
 
-    getDepth(){
-        
+    getSymbolDepth(site,symbol){
+        let mapItem = sitesMap.get(site);
+        if(!mapItem){
+            return { isSuccess: false, code: "", message: ""};
+        }
+
+        let depth = mapItem.find(p => p.symbol == symbol);
+        if(!depth){
+            return { isSuccess: false, code: "", message: ""};
+        }
+
+        return { isSuccess: true, depth: depth };
     }
 
 }();

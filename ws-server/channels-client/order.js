@@ -42,6 +42,10 @@ let order = new class {
         }
     }
 
+    getRecentOrders(site,symbol){
+
+    }
+
 }();
 
 module.exports = order;

@@ -50,22 +50,28 @@ class Server {
           //this.emit('error', 'Unable to parse incoming data:', res);
           return;
       }
-
-      switch(res.event){
-      case 'addChannel':
-        //{'event':'addChannel','channel':'channelValue','parameters':{'api_key':'value1','sign':'value2'}} 
-        
-        this.addChannelItem(res,ws);
-        break;
-      case 'removeChannel':
-        //{'event':'removeChannel','channel':'channelValue' }
-        this.removeChannel(res.channel,ws);
-        break;
-      case 'push':
-        //{'event':'push','channel':'market','parameters':{ depths: [{ site:"qq", symbol: 'btc#usd',bids: [[19000,1.02],[19899,0.95],[19888.5,0.87]] }]} }
-        this.pushData(res,this.clientsMap);
-        break;
+      
+      try{
+        switch(res.event){
+        case 'addChannel':
+          //{'event':'addChannel','channel':'channelValue','parameters':{'api_key':'value1','sign':'value2'}} 
+          
+          this.addChannelItem(res,ws);
+          break;
+        case 'removeChannel':
+          //{'event':'removeChannel','channel':'channelValue' }
+          this.removeChannel(res.channel,ws);
+          break;
+        case 'push':
+          //{'event':'push','channel':'market','parameters':{ depths: [{ site:"qq", symbol: 'btc#usd',bids: [[19000,1.02],[19899,0.95],[19888.5,0.87]] }]} }
+          this.pushData(res,this.clientsMap);
+          break;
+        }
+      } catch (err){
+        console.log(err);
       }
+
+
     }.bind(this));
 
     ws.on('error', err => console.log(`客户端 ${ip} errored: ${JSON.stringify(err)}`));

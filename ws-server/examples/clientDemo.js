@@ -1,5 +1,5 @@
 'use strict';
-const Client = require('./Client');
+const Client = require('../Client');
 const debug = require('debug')('ws-server:clientDemo');
 
 let client = new Client({

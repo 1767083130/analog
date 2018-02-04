@@ -42,7 +42,7 @@ let market = new class {
         }
     }
 
-    getWalletInfo(){
+    getWalletInfo(site){
 
     }
 

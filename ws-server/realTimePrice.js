@@ -1,9 +1,9 @@
 'use strict';
-const mongoose = require('mongoose');
-const RealTimePrice = mongoose.model('RealTimePrice');
-const RealTimePriceHistory = mongoose.model('RealTimePriceHistory');
-const SystemRunSettings = mongoose.model('SystemRunSettings');
-const DayPrice = mongoose.model('DayPrice');
+// const mongoose = require('mongoose');
+// const RealTimePrice = mongoose.model('RealTimePrice');
+// const RealTimePriceHistory = mongoose.model('RealTimePriceHistory');
+// const SystemRunSettings = mongoose.model('SystemRunSettings');
+// const DayPrice = mongoose.model('DayPrice');
 
 const BothApi = require('./apiClient/bothApi');
 const configUtil = require('./utils/configUtil');

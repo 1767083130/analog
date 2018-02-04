@@ -1,37 +1,72 @@
 'use strict';
-var EventEmitter = require('eventemitter2').EventEmitter2;
-var WebSocket = require('ws');
-var md5 = require('MD5');
-var util = require('util');
+const EventEmitter = require('eventemitter2').EventEmitter2;
+const WebSocket = require('ws');
+const md5 = require('MD5');
+const configUtil = require('./apiClient/configUtil');
 const clientChannel = require('./channels-client');
-var debug = require('debug')('Client:realtime-api');
+const Client = require('./Client');
+const debug = require('debug')('Client:realtime-api');
 
 const SITE_NAME = 'pkell';
+const Default_Channels = ['market','order','position','wallet']; 
+const ReadyStates =  ['CONNECTING', 'OPEN', 'CLOSING', 'CLOSED'];
+const AdviseDelay = 5 * 1000; //启动后建议停留时间，5s
 
-class CacheClient {
+class CacheClient extends EventEmitter{
     constructor(options){
+        super();
+        
+        //We inherit from EventEmitter2, which supports wildcards.
+        EventEmitter.call(this, {
+            wildcard: true,
+            delimiter: ':',
+            maxListeners: Infinity
+        });
+        
+        this.options = this.options || {};
+        let defaultOptions = this.getDefaultOptions();
+        Object.assign(this.options,this.options,defaultOptions);
+
         this.client = null;
+        this.readyTime = null;
     }
 
-    start(){  
-        let client = new Client({
-            appKey: 'a',
-            appSecret: 'b',
+    getDefaultOptions(){
+        let sites = [],
+            platforms = configUtil.getPlatforms();
+        platforms.forEach(p => sites.push(p.site));
+
+        return {
+            channels: Default_Channels,
+            sites: sites,
             url: 'ws://localhost:8080/ws'
+        };
+    }
+
+    /**
+     * 获取client状态。可能的几种状态：'CONNECTING', 'OPEN', 'CLOSING', 'CLOSED'
+     */
+    get readyState() {
+        if(!this.client){
+            throw new Error('socket client还没有启动，请先调用start方法进行启动');
+        }
+
+        return this.client.readyState;
+    }
+
+    start(callback){  
+        let client = new Client({
+            appKey:  this.options.appKey,
+            appSecret: this.options.appSecret,
+            url: this.options.url
         });
         this.client = client;
 
-        let channels = ['market','order','position','wallet']; 
         //连接服务器并在成功后订阅消息通道
         let errListener;
         client.connect(function(e){
-            console.log(`成功连接交易网站pkell`);
-            // setInterval(function(){
-            //     client.send({now: + new Date()});
-            // },50)
-
-            for(let site of ['okex','bitfinex']){
-                for(let channel of channels){
+            for(let site of this.options.sites){
+                for(let channel of this.options.channels){
                     let options = {
                         event: "addChannel",
                         channel: channel,
@@ -41,58 +76,98 @@ class CacheClient {
                 }
             }
 
-            client.on('pong',function(){
-                console.log(`${site} ${type} pong`);
-            }.bind(this));
-
             //处理返回的数据
             client.on('message', function(res){ 
-                console.log(JSON.stringify(res));
+                //console.log(JSON.stringify(res));
                 switch(res.channel){
                 case 'order':
-                    this.orders_reached(res);
+                    clientChannel.order.pushData(res);
                     break;
                 case 'position':
-                    this.positions_reached(res);
+                    clientChannel.position.pushData(res);
                     break;
                 case 'market':
-                    this.market_reached(res);
+                    clientChannel.market.pushData(res);
                     break;
                 case 'wallet':
-                    this.wallet_reached(res);
+                    clientChannel.wallet.pushData(res);
                     break;
                 }
             }.bind(this));
 
             //有可能是在重新连接的时候触发connect事件，这时先前注册的错误处理事件已经失效，需要重新注册
             client.off('error',errListener);
-            client.on('error', _onSocketError.bind(this));
+            client.on('error', this._onSocketError.bind(this));
+
+            callback && callback(e);
+            this.readyTime = new Date();
         }.bind(this));
 
         //有可能在没有连接成功前触发错误，这时也需要进行错误处理
-        client.on('error',errListener = _onSocketError.bind(this));
+        client.on('error',errListener = this._onSocketError.bind(this));
     }
+
 
     getClient(){
         return this.client;
     }
 
-    getPositions(site){
+    getPositions(site,symbol){
+        if(this.client == null){
+            return { isSuccess: false, code: "2000001", message: "启动尚未启动"}
+        }
+        if(+new Date - (+this.readyTime) < AdviseDelay){
+            console.warn(`有可能没有获取到完整的数据，建议${AdviseDelay}ms后再调用此方法`);
+        } 
 
+        return clientChannel.position.getPositions(site,symbol);
     }
 
-    getOrders(site){
-        
+    getRecentOrders(site,symbol){
+        if(this.client == null){
+            return { isSuccess: false, code: "2000001", message: "启动尚未启动"}
+        }
+        if(+new Date - (+this.readyTime) < AdviseDelay){
+            console.warn(`有可能没有获取到完整的数据，建议${AdviseDelay}ms后再调用此方法`);
+        } 
+
+        return clientChannel.order.getRecentOrders(site,symbol);
     }
 
     getSymbolDepth(site,symbol){
+        if(this.client == null){
+            return { isSuccess: false, code: "2000001", message: "启动尚未启动"}
+        }
+        if(+new Date - (+this.readyTime) < AdviseDelay){
+            console.warn(`有可能没有获取到完整的数据，建议${AdviseDelay}ms后再调用此方法`);
+        } 
 
+        return clientChannel.market.getSymbolDepth(site,symbol);
     }
 
     getWalletInfo(site){
-
+        if(this.client != null){
+            return { isSuccess: false, code: "2000001", message: "启动尚未启动"}
+        }
+        if(+new Date - (+this.readyTime) < AdviseDelay){
+            console.warn(`有可能没有获取到完整的数据，建议${AdviseDelay}ms后再调用此方法`);
+        } 
+        
+        return clientChannel.wallet.getWalletInfo(site);
     }
 
+    _onSocketError(err){
+        if(err.message || err.stack){
+            console.error(`${this.site} ${this.type} 出错啦! ` + err.message + '\n' + err.stack);
+        } else {
+            console.error(`${this.site} ${this.type} 出错啦! ` +  JSON.stringify(err));
+        }
+    }
 }
+
+//readyStates有几种状态： ['CONNECTING', 'OPEN', 'CLOSING', 'CLOSED'];
+ReadyStates.forEach((readyState, i) => {
+    CacheClient[ReadyStates[i]] = i;
+});
 
 module.exports = CacheClient

@@ -42,7 +42,7 @@ let position = new class {
         }
     }
 
-    getPositions(){
+    getPositions(site,symbol){
 
     }
     
