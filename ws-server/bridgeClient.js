@@ -1,7 +1,8 @@
 'use strict';
+
 const fs = require('fs');
 const path = require('path');
-const configUtil  = require('./configUtil');
+const configUtil  = require('./apiClient/configUtil');
 const siteConfigs = require('bitcoin-clients').clients;
 const co = require('co');
 const Client = require('./Client');

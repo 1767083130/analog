@@ -5,6 +5,9 @@ const http = require('http');
 const url = require('url');
 const channelLib = require('./channels');
 
+/**
+ * 服务端server
+ */
 class Server {
   
   constructor(){
@@ -164,4 +167,3 @@ class Server {
 
 let server = new Server();
 server.start();
-
