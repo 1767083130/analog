@@ -2,7 +2,7 @@
 
 const WebSocket = require('ws');
 const sitesMap = new Map(); //key: site, value: [{ symbol: "btc#usd",bids:[],asks:[],timestamp: 23432432 }]
-const Market_ChannelName = "market";
+const ChannelName = "wallet";
 
 let market = new class {
     addChannelItem(data,channel){
@@ -77,14 +77,14 @@ let market = new class {
                 continue;
             }
 
-            let marketChannel = channels.find(p => p.channel == 'market');
+            let marketChannel = channels.find(p => p.channel == ChannelName);
             if(!marketChannel){
                 continue;
             }
 
             let newDepths = [];
             for(let depth of depths){
-                let item = marketChannel.items.find(p => p.symbol == depth.symbol || p.symbol == '*');
+                let item = marketChannel.items.find(p => p.coin == depth.coin || p.coin == '*');
                 if(!item){
                     newDepths.push(depth);
                 }
@@ -92,7 +92,7 @@ let market = new class {
             
             if(newDepths.length > 0){
                 let channelData = {
-                    "channel": Market_ChannelName,
+                    "channel": ChannelName,
                     "success": true,
                     //"errorcode":"",
                     "data":newDepths

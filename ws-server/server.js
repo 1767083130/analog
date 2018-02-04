@@ -96,17 +96,17 @@ class Server {
     }
 
     switch(res.channel){
-      // case 'wallet':
-      //   channelLib.wallet.addChannelItem(res.parameters,channel);
-      //   break;
+      case 'wallet':
+        channelLib.wallet.addChannelItem(res.parameters,channel);
+        break;
       case 'market':
         channelLib.market.addChannelItem(res.parameters,channel);
         break;
-      // case 'order':
-      //   channelLib.order.addChannelItem(res.parameters,channel);
-      //   break;
-      // case 'position':
-      //   channelLib.position.addChannelItem(res.parameters,channel);
+      case 'order':
+        channelLib.order.addChannelItem(res.parameters,channel);
+        break;
+      case 'position':
+        channelLib.position.addChannelItem(res.parameters,channel);
         break;
     }
   }
@@ -129,18 +129,18 @@ class Server {
     }
 
     switch(res.channel){
-      // case 'account':
-      //   channelLib.account.pushData(res,this.clientsMap);
-      //   break;
+      case 'account':
+        channelLib.account.pushData(res,this.clientsMap);
+        break;
       case 'market':
         channelLib.market.pushData(res,this.clientsMap);
         break;
-      // case 'order':
-      //   channelLib.order.pushData(res,this.clientsMap);
-      //   break;
-      // case 'position':
-      //   channelLib.position.pushData(res,this.clientsMap);
-      //   break;
+      case 'order':
+        channelLib.order.pushData(res,this.clientsMap);
+        break;
+      case 'position':
+        channelLib.position.pushData(res,this.clientsMap);
+        break;
     }
   }
 

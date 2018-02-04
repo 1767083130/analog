@@ -2,9 +2,9 @@
 
 const WebSocket = require('ws');
 const sitesMap = new Map(); //key: site, value: [{ symbol: "btc#usd",bids:[],asks:[],timestamp: 23432432 }]
-const Market_ChannelName = "market";
+const ChannelName = "market";
 
-let position = new class {
+let market = new class {
     
     addChannelItem(data,channel){
         //data数据格式:  {site: "okex",symbol: "btc#usd"} 
@@ -93,7 +93,7 @@ let position = new class {
             
             if(newDepths.length > 0){
                 let channelData = {
-                    "channel": Market_ChannelName,
+                    "channel": ChannelName,
                     "success": true,
                     //"errorcode":"",
                     "data":newDepths
@@ -108,4 +108,4 @@ let position = new class {
 
 }();
 
-module.exports = position;
+module.exports = market;

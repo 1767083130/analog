@@ -59,7 +59,6 @@ class BridgeClient {
     }
 
     _onWsClose(){
-        return;
         this.ws = null
         //this._isClosing = false // used to block reconnect on direct close() call
         this._isReconnecting = false
@@ -207,8 +206,8 @@ class BridgeClient {
         if(!e || !e.data){
             return;
         }
-
-        this.ws.send({'event':'push','channel':'order','data': e.data},this._onSendDataError); 
+        
+        this.ws.send({'event':'push','channel':'order', 'parameters': { orders: e.data } },this._onSendDataError); 
     }
 
     positions_reached(e){
@@ -216,7 +215,7 @@ class BridgeClient {
             return;
         }
 
-        this.ws.send({'event':'push', 'channel':'market','data': e.data},this._onSendDataError); 
+        this.ws.send({'event':'push', 'channel':'position','parameters':{ positions: e.data}},this._onSendDataError); 
     }
 
     wallet_reached(e){
@@ -224,7 +223,7 @@ class BridgeClient {
             return;
         }
 
-        this.ws.send({'event':'push','channel':'wallet','data': e.data},this._onSendDataError); 
+        this.ws.send({'event':'push','channel':'wallet','parameters': { wallets: e.data }},this._onSendDataError); 
     }
 
     _onSocketError(err){

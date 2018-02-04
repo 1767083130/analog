@@ -2,7 +2,7 @@
 
 const WebSocket = require('ws');
 const sitesMap = new Map(); //key: site, value: [{ symbol: "btc#usd",bids:[],asks:[],timestamp: 23432432 }]
-const Market_ChannelName = "market";
+const ChannelName = "market";
 
 let market = new class {
     
@@ -93,7 +93,7 @@ let market = new class {
             
             if(newDepths.length > 0){
                 let channelData = {
-                    "channel": Market_ChannelName,
+                    "channel": ChannelName,
                     "success": true,
                     //"errorcode":"",
                     "data":newDepths
