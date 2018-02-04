@@ -78,7 +78,7 @@ let order = new class {
                 continue;
             }
 
-            let marketChannel = channels.find(p => p.channel == 'market');
+            let marketChannel = channels.find(p => p.channel == ChannelName);
             if(!marketChannel){
                 continue;
             }

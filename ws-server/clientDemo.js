@@ -3,9 +3,9 @@ const Client = require('./Client');
 const debug = require('debug')('ws-server:clientDemo');
 
 let client = new Client({
-  appKey: 'a',
-  appSecret: 'b',
-  url: 'ws://localhost:8080/ws'
+    appKey: 'a',
+    appSecret: 'b',
+    url: 'ws://localhost:8080/ws'
 });
 let channels = ['market','order','position','wallet']; 
 
@@ -35,20 +35,20 @@ client.connect(function(e){
     //处理返回的数据
     client.on('message', function(res){ 
         console.log(JSON.stringify(res));
-        // switch(res.channel){
-        // case 'order':
-        //     this.orders_reached(res);
-        //     break;
-        // case 'position':
-        //     this.positions_reached(res);
-        //     break;
-        // case 'market':
-        //     this.market_reached(res);
-        //     break;
-        // case 'wallet':
-        //     this.wallet_reached(res);
-        //     break;
-        // }
+        switch(res.channel){
+        case 'order':
+            this.orders_reached(res);
+            break;
+        case 'position':
+            this.positions_reached(res);
+            break;
+        case 'market':
+            this.market_reached(res);
+            break;
+        case 'wallet':
+            this.wallet_reached(res);
+            break;
+        }
     }.bind(this));
 
     //有可能是在重新连接的时候触发connect事件，这时先前注册的错误处理事件已经失效，需要重新注册
@@ -59,7 +59,6 @@ client.connect(function(e){
 //有可能在没有连接成功前触发错误，这时也需要进行错误处理
 client.on('error',errListener = _onSocketError.bind(this));
 
-
 function _onSocketError(err){
   if(err.message || err.stack){
       console.error(`${this.site} ${this.type} 出错啦! ` + err.message + '\n' + err.stack);
@@ -67,6 +66,3 @@ function _onSocketError(err){
       console.error(`${this.site} ${this.type} 出错啦! ` +  JSON.stringify(err));
    }
 }
-
-
-

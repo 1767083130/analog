@@ -1,30 +1,30 @@
 'use strict';
 
 const WebSocket = require('ws');
-const sitesMap = new Map(); //key: site, value: [{ symbol: "btc#usd",bids:[],asks:[],timestamp: 23432432 }]
+const sitesMap = new Map(); //key: site, value: [{ coin: "btc#usd",bids:[],asks:[],timestamp: 23432432 }]
 const ChannelName = "wallet";
 
 let market = new class {
     addChannelItem(data,channel){
-        //data数据格式:  {site: "okex",symbol: "btc#usd"} 
-        //channel数据格式：{channel: "market", items:[ { site: "",symbols: []} ]}
+        //data数据格式:  {site: "okex",coin: "btc#usd"} 
+        //channel数据格式：{channel: "market", items:[ { site: "",coins: []} ]}
     
         if(channel.items){
             let siteItem = channel.items.find(p => p.site == data.site);
             if(!siteItem){
-                siteItem = { site: data.site, symbols: [] }
+                siteItem = { site: data.site, coins: [] }
                 channel.items.push(siteItem);
             }
 
-            let symbolItem = siteItem.symbols.find(p => p.symbol == data.symbol || p.symbol == '*');
-            if(!symbolItem){ //不存在
-                siteItem.symbols.push(data.symbol);
+            let coinItem = siteItem.coins.find(p => p.coin == data.coin || p.coin == '*');
+            if(!coinItem){ //不存在
+                siteItem.coins.push(data.coin);
             }
         } else {
             channel.items = [];
             channel.items.push({
                 site: data.site,
-                symbols: [data.symbol]
+                coins: [data.coin]
             });
         }
     }
@@ -32,7 +32,7 @@ let market = new class {
     pushData(res,clientsMap){
         //data数据格式: {
         //     site: "baidu",  //网站名称
-        //     symbol: "btc#usd", //交易品种，如果为"*",则表示订阅如 "btc#usd"表示使用美元兑换比特币的交易品种
+        //     coin: "btc#usd", //交易品种，如果为"*",则表示订阅如 "btc#usd"表示使用美元兑换比特币的交易品种
         //     bids: [[19000,1.02],[19899,0.95],[19888.5,0.87]],   //array, 买单深度,已按照价格降序排列 数组索引(string) 0 价格, 1 量(张)
         //     asks: [[19100,1.03],[19105,0.98]]   //array,卖单深度,已按照价格升序排列 数组索引(string) 0 价格, 1 量(张)
         //     timestamp: res.realPrice.time //long, 服务器时间戳
@@ -51,7 +51,7 @@ let market = new class {
             if(!mapItem){
                 sitesMap.set(site,[depth]);
             } else {
-                let index = mapItem.findIndex(p => p.symbol == depth.symbol);
+                let index = mapItem.findIndex(p => p.coin == depth.coin);
                 if(index == -1){
                     mapItem.push(depth);
                     newDepths.push(depth);

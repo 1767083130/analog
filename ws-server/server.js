@@ -3,7 +3,7 @@
 const WebSocket = require('ws');
 const http = require('http');
 const url = require('url');
-const channelLib = require('./channels');
+const serverChannel = require('./channels-server');
 
 /**
  * 服务端server
@@ -97,16 +97,16 @@ class Server {
 
     switch(res.channel){
       case 'wallet':
-        channelLib.wallet.addChannelItem(res.parameters,channel);
+        serverChannel.wallet.addChannelItem(res.parameters,channel);
         break;
       case 'market':
-        channelLib.market.addChannelItem(res.parameters,channel);
+        serverChannel.market.addChannelItem(res.parameters,channel);
         break;
       case 'order':
-        channelLib.order.addChannelItem(res.parameters,channel);
+        serverChannel.order.addChannelItem(res.parameters,channel);
         break;
       case 'position':
-        channelLib.position.addChannelItem(res.parameters,channel);
+        serverChannel.position.addChannelItem(res.parameters,channel);
         break;
     }
   }
@@ -130,16 +130,16 @@ class Server {
 
     switch(res.channel){
       case 'account':
-        channelLib.account.pushData(res,this.clientsMap);
+        serverChannel.account.pushData(res,this.clientsMap);
         break;
       case 'market':
-        channelLib.market.pushData(res,this.clientsMap);
+        serverChannel.market.pushData(res,this.clientsMap);
         break;
       case 'order':
-        channelLib.order.pushData(res,this.clientsMap);
+        serverChannel.order.pushData(res,this.clientsMap);
         break;
       case 'position':
-        channelLib.position.pushData(res,this.clientsMap);
+        serverChannel.position.pushData(res,this.clientsMap);
         break;
     }
   }
