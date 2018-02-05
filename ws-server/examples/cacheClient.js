@@ -10,11 +10,21 @@ cacheClient.start();
 
 let client = cacheClient.getClient();
 client.on('open',function(){
-    let symbolDepth = cacheClient.getSymbolDepth("bitfinex","btc#usd");
-    console.log(JSON.stringify(symbolDepth));
+    let symbolDepths = cacheClient.getSymbolDepths("bitfinex","btc#usd");
+    console.log(JSON.stringify(symbolDepths));
 })
 
 setInterval(function(){
-    let symbolDepth = cacheClient.getSymbolDepth("bitfinex","btc#usd");
+    let symbolDepth = cacheClient.getWalletInfo("bitfinex");
     console.log(JSON.stringify(symbolDepth));
+},1500)
+
+setInterval(function(){
+    let symbolDepths = cacheClient.getSymbolDepths("bitfinex","btc#usd");
+    console.log(JSON.stringify(symbolDepths));
+},15000)
+
+setInterval(function(){
+    let positions = cacheClient.getPositions("bitfinex");
+    console.log(JSON.stringify(positions));
 },15000)

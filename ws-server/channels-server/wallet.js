@@ -8,33 +8,28 @@ let market = new class {
     addChannelItem(data,channel){
         //data数据格式:  {site: "okex",coin: "btc#usd"} 
         //channel数据格式：{channel: "market", items:[ { site: "",coins: []} ]}
+        if(!channel) throw new Error('参数channel不能为空');
     
         if(channel.items){
             let siteItem = channel.items.find(p => p.site == data.site);
             if(!siteItem){
-                siteItem = { site: data.site, coins: [] }
+                siteItem = { site: data.site }
                 channel.items.push(siteItem);
-            }
-
-            let coinItem = siteItem.coins.find(p => p.coin == data.coin || p.coin == '*');
-            if(!coinItem){ //不存在
-                siteItem.coins.push(data.coin);
             }
         } else {
             channel.items = [];
             channel.items.push({
-                site: data.site,
-                coins: [data.coin]
+                site: data.site
             });
         }
     }
 
     pushData(res,clientsMap){
-        if(!res || !res.data){
+        if(!res || !res.parameters || !res.parameters.data){
             return;
         }
 
-        let wallet = res.data,
+        let wallet = res.parameters.data,
             newWallet = [];
         for(let walletItem of wallet){
             let site = walletItem.site;

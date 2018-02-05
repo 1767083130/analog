@@ -1,6 +1,9 @@
-
 cd ws-server
 
 (1) 运行服务器端  node server
-(2) 运行桥接客户端 node bridgeClient
-(3) 客户端DEMO node clientDemo
+(2) 客户端DEMO node examples/cacheClient
+(3) 运行桥接客户端 node bridgeClient
+
+需要特别注意的是，因为系统暂时不支持在订阅通道的时候发送快照数据，各个客户端的启动顺序不能颠倒
+
+

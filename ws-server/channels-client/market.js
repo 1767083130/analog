@@ -35,18 +35,23 @@ let market = new class {
         }
     }
 
-    getSymbolDepth(site,symbol){
+    /**
+     * 获取即时价格
+     * @param {String} site 网站名称
+     * @param {String} [symbol] 交易品种,如果为空，则获取全部品种
+     */
+    getSymbolDepths(site,symbol){
         let mapItem = sitesMap.get(site);
         if(!mapItem){
-            return { isSuccess: false, code: "10010", message: "数据不存在"};
+            return { isSuccess: false, code: "10010", message: `网站${site}不存在交易品种${symbol ? symbol : '*'}的即时价格信息`};
         }
 
-        let depth = mapItem.find(p => p.symbol == symbol);
-        if(!depth){
-            return { isSuccess: false, code: "10010", message: "数据不存在"};
+        let depths = symbol ? mapItem.find(p => p.symbol == symbol) : mapItem;
+        if(!depths){
+            return { isSuccess: false, code: "10010", message: `网站${site}不存在交易品种${symbol ? symbol : '*'}的即时价格信息`};
         }
 
-        return { isSuccess: true, depth: depth };
+        return { isSuccess: true, depths: depths };
     }
 
 }();

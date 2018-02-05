@@ -12,17 +12,8 @@ const Default_Channels = ['market','order','position','wallet'];
 const ReadyStates =  ['CONNECTING', 'OPEN', 'CLOSING', 'CLOSED'];
 const AdviseDelay = 5 * 1000; //启动后建议停留时间，5s
 
-class CacheClient extends EventEmitter{
-    constructor(options){
-        super();
-        
-        //We inherit from EventEmitter2, which supports wildcards.
-        EventEmitter.call(this, {
-            wildcard: true,
-            delimiter: ':',
-            maxListeners: Infinity
-        });
-        
+class CacheClient {
+    constructor(options){        
         this.options = options || {};
         let defaultOptions = this.getDefaultOptions();
         Object.assign(this.options,this.options,defaultOptions);
@@ -70,7 +61,10 @@ class CacheClient extends EventEmitter{
                     let options = {
                         event: "addChannel",
                         channel: channel,
-                        parameters: { site: site, symbol: '*' }
+                        parameters: {
+                            site: site, 
+                            symbol: '*' 
+                        }
                     };
                     client.send(options);
                 }
@@ -80,9 +74,6 @@ class CacheClient extends EventEmitter{
             client.on('message', function(res){ 
                 //console.log(JSON.stringify(res));
                 switch(res.channel){
-                case 'order':
-                    clientChannel.order.pushData(res);
-                    break;
                 case 'position':
                     clientChannel.position.pushData(res);
                     break;
@@ -92,6 +83,9 @@ class CacheClient extends EventEmitter{
                 case 'wallet':
                     clientChannel.wallet.pushData(res);
                     break;
+                // case 'order':
+                //     clientChannel.order.pushData(res);
+                //     break;
                 }
             }.bind(this));
 
@@ -113,8 +107,8 @@ class CacheClient extends EventEmitter{
     }
 
     getPositions(site,symbol){
-        if(this.client == null){
-            return { isSuccess: false, code: "2000001", message: "启动尚未启动"}
+        if(!this.client){
+            return { isSuccess: false, code: "2000001", message: "系统尚未启动"}
         }
         if(+new Date - (+this.readyTime) < AdviseDelay){
             console.warn(`有可能没有获取到完整的数据，建议${AdviseDelay}ms后再调用此方法`);
@@ -124,8 +118,8 @@ class CacheClient extends EventEmitter{
     }
 
     getRecentOrders(site,symbol){
-        if(this.client == null){
-            return { isSuccess: false, code: "2000001", message: "启动尚未启动"}
+        if(!this.client){
+            return { isSuccess: false, code: "2000001", message: "系统尚未启动"}
         }
         if(+new Date - (+this.readyTime) < AdviseDelay){
             console.warn(`有可能没有获取到完整的数据，建议${AdviseDelay}ms后再调用此方法`);
@@ -134,20 +128,21 @@ class CacheClient extends EventEmitter{
         return clientChannel.order.getRecentOrders(site,symbol);
     }
 
-    getSymbolDepth(site,symbol){
-        if(this.client == null){
-            return { isSuccess: false, code: "2000001", message: "启动尚未启动"}
+
+    getSymbolDepths(site,symbol){
+        if(!this.client){
+            return { isSuccess: false, code: "2000001", message: "系统尚未启动"}
         }
         if(+new Date - (+this.readyTime) < AdviseDelay){
             console.warn(`有可能没有获取到完整的数据，建议${AdviseDelay}ms后再调用此方法`);
         } 
 
-        return clientChannel.market.getSymbolDepth(site,symbol);
+        return clientChannel.market.getSymbolDepths(site,symbol);
     }
 
     getWalletInfo(site){
-        if(this.client != null){
-            return { isSuccess: false, code: "2000001", message: "启动尚未启动"}
+        if(!this.client){
+            return { isSuccess: false, code: "2000001", message: "系统尚未启动"}
         }
         if(+new Date - (+this.readyTime) < AdviseDelay){
             console.warn(`有可能没有获取到完整的数据，建议${AdviseDelay}ms后再调用此方法`);

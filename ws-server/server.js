@@ -55,7 +55,6 @@ class Server {
         switch(res.event){
         case 'addChannel':
           //{'event':'addChannel','channel':'channelValue','parameters':{'api_key':'value1','sign':'value2'}} 
-          
           this.addChannelItem(res,ws);
           break;
         case 'removeChannel':
@@ -145,7 +144,6 @@ class Server {
         serverChannel.order.pushData(res,this.clientsMap);
         break;
       case 'position':
-        console.log(JSON.stringify(res));
         serverChannel.position.pushData(res,this.clientsMap);
         break;
     }

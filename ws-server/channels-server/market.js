@@ -9,13 +9,16 @@ let market = new class {
     addChannelItem(data,channel){
         //data数据格式:  {site: "okex",symbol: "btc#usd"} 
         //channel数据格式：{channel: "market", items:[ { site: "",symbols: []} ]}
-    
+        if(!data) throw new Error('参数data不能为空');
+        if(!channel) throw new Error('参数channel不能为空');
+
         if(channel.items){
             let siteItem = channel.items.find(p => p.site == data.site);
             if(!siteItem){
                 siteItem = { site: data.site, symbols: [] }
                 channel.items.push(siteItem);
             }
+            siteItem.symbols = siteItem.symbols || [];
 
             let symbolItem = siteItem.symbols.find(p => p.symbol == data.symbol || p.symbol == '*');
             if(!symbolItem){ //不存在
@@ -38,11 +41,11 @@ let market = new class {
         //     asks: [[19100,1.03],[19105,0.98]]   //array,卖单深度,已按照价格升序排列 数组索引(string) 0 价格, 1 量(张)
         //     timestamp: res.realPrice.time //long, 服务器时间戳
         // }
-        if(!res || !res.data){
+        if(!res || !res.parameters || !res.parameters.data){
             return;
         }
 
-        let depths = res.data,
+        let depths = res.parameters.data,
             newDepths = [];
         for(let depth of depths){
             let site = depth.site;
@@ -78,6 +81,7 @@ let market = new class {
                 continue;
             }
 
+            //client端是否订阅了通道
             let marketChannel = channels.find(p => p.channel == ChannelName);
             if(!marketChannel){
                 continue;
@@ -86,7 +90,8 @@ let market = new class {
             let newDepths = [];
             for(let depth of depths){
                 //判断客户端是否订阅了此类数据，如果已订阅，将数据加入数组
-                let item = marketChannel.items.find(p => p.symbol == depth.symbol || p.symbol == '*');
+                let item = marketChannel.items.find(p => p.site == depth.site
+                            && (p.symbols.indexOf(depth.symbol) != -1  || p.symbols.indexOf('*') != -1));
                 if(item){
                     newDepths.push(depth);
                 }

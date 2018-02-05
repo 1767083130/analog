@@ -6,44 +6,50 @@ const ChannelName = "position";
 
 let position = new class {
     
+    /**
+     * 推送数据
+     * @param {Object} res 
+     */
     pushData(res){
-        if(!res || !res.parameters || !res.parameters.positions){
+        if(!res || !res.data){
             return;
         }
 
-        let positions = res.parameters.positions,
-            newPositions = [];
+        let positions = res.data;
         for(let position of positions){
-            let site = depth.site;
-            depth.timestamp = depth.timestamp ? +depth.timestamp : + new Date();
+            let site = position.site;
+            position.timestamp = position.timestamp ? +position.timestamp : + new Date();
 
             let mapItem = sitesMap.get(site);
             if(!mapItem){
-                sitesMap.set(site,[depth]);
+                sitesMap.set(site,[position]);
             } else {
-                let index = mapItem.findIndex(p => p.symbol == depth.symbol);
+                let index = mapItem.findIndex(p => p.symbol == position.symbol);
                 if(index == -1){
-                    mapItem.push(depth);
-                    newPositions.push(depth);
+                    mapItem.push(position);
                 } else {
-                    if(mapItem[index].timestamp < depth.timestamp){
-                        mapItem.splice(index,1,depth);
-                        newPositions.push(depth);
+                    if(mapItem[index].timestamp < position.timestamp){
+                        mapItem.splice(index,1,position);
                     } 
                 }
             }
         }
     }
 
+    /**
+     * 获取最新的仓位信息
+     * @param {String} site 网站名称 
+     * @param {String} [symbol] 交易品种，如果为空，则获取全部项 
+     */
     getPositions(site,symbol){
         let mapItem = sitesMap.get(site);
         if(!mapItem){
-            return { isSuccess: false, code: "10010", message: "数据不存在"};
+            return { isSuccess: false, code: "10010", message: `网站${site}不存在交易品种${symbol ? symbol : '*'}的仓位信息`};
         }
 
-        let positions = mapItem.find(p => p.symbol == symbol);
+        let positions = symbol ? mapItem.find(p => p.symbol == symbol) : mapItem;
         if(!positions){
-            return { isSuccess: false, code: "10010", message: "数据不存在"};
+            return { isSuccess: false, code: "10010", message: `网站${site}不存在交易品种${symbol ? symbol : '*'}的仓位信息`};
         }
 
         return { isSuccess: true, positions: positions };

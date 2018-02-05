@@ -9,6 +9,7 @@ let position = new class {
     addChannelItem(data,channel){
         //data数据格式:  {site: "okex",symbol: "btc#usd"} 
         //channel数据格式：{channel: "market", items:[ { site: "",symbols: []} ]}
+        if(!channel) throw new Error('参数channel不能为空');
     
         if(channel.items){
             let siteItem = channel.items.find(p => p.site == data.site);
@@ -16,27 +17,20 @@ let position = new class {
                 siteItem = { site: data.site, symbols: [] }
                 channel.items.push(siteItem);
             }
-
-            let symbolItem = siteItem.symbols.find(p => p.symbol == data.symbol || p.symbol == '*');
-            if(!symbolItem){ //不存在
-                siteItem.symbols.push(data.symbol);
-            }
         } else {
             channel.items = [];
             channel.items.push({
-                site: data.site,
-                symbols: [data.symbol]
+                site: data.site
             });
         }
     }
 
     pushData(res,clientsMap){
-        //console.log(JSON.stringify(res));
-        if(!res || !res.data){
+        if(!res || !res.parameters || !res.parameters.data){
             return;
         }
 
-        let positions = res.data,
+        let positions = res.parameters.data,
             newPositions = [];
         for(let position of positions){
             let site = position.site;
@@ -77,19 +71,17 @@ let position = new class {
             if(!positionChannel){
                 continue;
             }
-            
-            if(newPositions.length > 0){
-                let channelData = {
-                    "channel": ChannelName,
-                    "success": true,
-                    //"errorcode":"",
-                    "data": positions
-                };
+ 
+            let channelData = {
+                "channel": ChannelName,
+                "success": true,
+                //"errorcode":"",
+                "data": positions
+            };
 
-                if (ws.readyState === WebSocket.OPEN) {
-                    ws.send(JSON.stringify(channelData));
-                } 
-            }
+            if (ws.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify(channelData));
+            } 
         }
     }
 
