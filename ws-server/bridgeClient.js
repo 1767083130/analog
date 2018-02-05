@@ -9,6 +9,7 @@ const Client = require('./Client');
 const debug = require('debug')('ws-server:bridgeClient');
 
 const Server_Url = 'ws://localhost:8080/ws';
+const DefaultChannels = ['position']; //'order','wallet','position','market'
 
 /**
  * 桥接客户端
@@ -17,26 +18,48 @@ const Server_Url = 'ws://localhost:8080/ws';
 class BridgeClient {
     constructor(options){
         //this.clearLogs();
-        options = options || {};
-        this.ws = null;
-        this.options = options;
+        this.options = options || {};
+        let defaultOptions = this.getDefaultOptions();
+        Object.assign(this.options,this.options,defaultOptions);
 
+        this.ws = null;
         this._isReconnecting = false;
         this._isClosing = false;
-        this._reconnectDelay = options.reconnectDelay || 2000;
-        this._autoReconnect = (options.autoReconnect === undefined ? true : options.autoReconnect);
+        this._reconnectDelay = this.options.reconnectDelay;
+        this._autoReconnect = (this.options.autoReconnect === undefined ? true : this.options.autoReconnect);
+    }
+
+    getDefaultOptions(){
+        let sites = [],
+            platforms = configUtil.getPlatforms();
+        platforms.forEach(p => sites.push(p.site));
+
+        sites = ['okex']; //todo
+        return {
+            appKey: "a",
+            appSecret: "b",
+            reconnectDelay: 2000,
+            autoReconnect: true,
+            channels: DefaultChannels,
+            sites: sites,
+            url: Server_Url
+        };
     }
 
     start(){
-        this.ws = new Client({ appKey: "a", appSecret: "b", url: Server_Url});
+        this.ws = new Client({ 
+            appKey: this.options.appKey, 
+            appSecret: this.options.appSecret, 
+            url: this.options.url
+        });
         this.ws.connect();
+
         this.ws.on('open', function open() {
             this._isReconnecting = false;
             console.log('连接server成功');
-            this.connectSites(this.options);
-            setInterval(function(){
-                this.ws.send({now: + new Date()});
-            }.bind(this),50)
+
+            let options = { channels: this.options.channels,sites: this.options.sites };
+            this.connectSites(options);
         }.bind(this));
 
         this.ws.on('message',function(res){
@@ -93,17 +116,13 @@ class BridgeClient {
     }
 
     connectSites(options){
-        let channels = options.channels || ['order','wallet','position','market'];  
+        let channels = options.channels;  
         let platforms = configUtil.getPlatforms();
         for(let platform of platforms){
             if(options && options.sites && options.sites.indexOf(platform.site) == -1){
                 continue;
             }
             if(!platform.isValid){
-                continue;
-            }
-
-            if(['okex', 'bitfinex'].indexOf(platform.site) == -1 ){ //todo 'okex', 'bitfinex','bitmex',
                 continue;
             }
             console.log(`正在连接交易网站${platform.site}...`);
@@ -163,6 +182,7 @@ class BridgeClient {
                     this.orders_reached(res);
                     break;
                 case 'position':
+                    //clconsole.log(JSON.stringify(res));
                     this.positions_reached(res);
                     break;
                 case 'market':
@@ -199,7 +219,7 @@ class BridgeClient {
             });
         }
 
-        this.ws.send({'event':'push','channel':'market','parameters': { depths: items } },this._onSendDataError); 
+        this.ws.send({'event':'push','channel':'market','parameters': { data: items } },this._onSendDataError); 
     }
 
     orders_reached(e){
@@ -207,7 +227,13 @@ class BridgeClient {
             return;
         }
         
-        this.ws.send({'event':'push','channel':'order', 'parameters': { orders: e.data } },this._onSendDataError); 
+        this.ws.send({
+            'event':'push',
+            'channel':'order', 
+            'action': e.action,
+            'data': e.data,
+            'appKey': e.appKey
+        },this._onSendDataError); 
     }
 
     positions_reached(e){
@@ -215,7 +241,13 @@ class BridgeClient {
             return;
         }
 
-        this.ws.send({'event':'push', 'channel':'position','parameters':{ positions: e.data}},this._onSendDataError); 
+        this.ws.send({
+            'event':'push', 
+            'channel':'position', 
+            'action': e.action, 
+            'appKey': e.appKey,
+            'data': e.data
+        },this._onSendDataError); 
     }
 
     wallet_reached(e){
@@ -223,7 +255,13 @@ class BridgeClient {
             return;
         }
 
-        this.ws.send({'event':'push','channel':'wallet','parameters': { wallets: e.data }},this._onSendDataError); 
+        this.ws.send({
+            'event':'push',
+            'channel':'wallet',
+            'action': e.action,
+            'appKey': e.appKey,
+            'data': e.data
+        },this._onSendDataError); 
     }
 
     _onSocketError(err){

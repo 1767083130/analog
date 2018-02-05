@@ -38,12 +38,12 @@ let market = new class {
     getSymbolDepth(site,symbol){
         let mapItem = sitesMap.get(site);
         if(!mapItem){
-            return { isSuccess: false, code: "", message: ""};
+            return { isSuccess: false, code: "10010", message: "数据不存在"};
         }
 
         let depth = mapItem.find(p => p.symbol == symbol);
         if(!depth){
-            return { isSuccess: false, code: "", message: ""};
+            return { isSuccess: false, code: "10010", message: "数据不存在"};
         }
 
         return { isSuccess: true, depth: depth };

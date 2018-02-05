@@ -38,11 +38,11 @@ let market = new class {
         //     asks: [[19100,1.03],[19105,0.98]]   //array,卖单深度,已按照价格升序排列 数组索引(string) 0 价格, 1 量(张)
         //     timestamp: res.realPrice.time //long, 服务器时间戳
         // }
-        if(!res || !res.parameters || !res.parameters.depths){
+        if(!res || !res.data){
             return;
         }
 
-        let depths = res.parameters.depths,
+        let depths = res.data,
             newDepths = [];
         for(let depth of depths){
             let site = depth.site;
@@ -85,8 +85,9 @@ let market = new class {
 
             let newDepths = [];
             for(let depth of depths){
+                //判断客户端是否订阅了此类数据，如果已订阅，将数据加入数组
                 let item = marketChannel.items.find(p => p.symbol == depth.symbol || p.symbol == '*');
-                if(!item){
+                if(item){
                     newDepths.push(depth);
                 }
             }

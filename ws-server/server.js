@@ -145,6 +145,7 @@ class Server {
         serverChannel.order.pushData(res,this.clientsMap);
         break;
       case 'position':
+        console.log(JSON.stringify(res));
         serverChannel.position.pushData(res,this.clientsMap);
         break;
     }

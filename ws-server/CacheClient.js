@@ -23,7 +23,7 @@ class CacheClient extends EventEmitter{
             maxListeners: Infinity
         });
         
-        this.options = this.options || {};
+        this.options = options || {};
         let defaultOptions = this.getDefaultOptions();
         Object.assign(this.options,this.options,defaultOptions);
 
