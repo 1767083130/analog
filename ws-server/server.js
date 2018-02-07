@@ -5,6 +5,8 @@ const http = require('http');
 const url = require('url');
 const serverChannel = require('./channels-server');
 
+const KeepAliveTime  = 20000;
+
 /**
  * 服务端server
  */
@@ -31,7 +33,7 @@ class Server {
         ws.isAlive = false;
         ws.ping(noop);
       });
-    }.bind(this), 10000);
+    }.bind(this), KeepAliveTime);
   }
 
   _onConnection(ws,req){
