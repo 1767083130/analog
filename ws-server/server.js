@@ -73,7 +73,22 @@ class Server {
 
     }.bind(this));
 
-    ws.on('error', err => console.log(`客户端 ${ip} errored: ${JSON.stringify(err)}`));
+    ws.on('error', function(err) { 
+      console.log(`客户端 ${ip} errored: ${JSON.stringify(err)}`);
+      this._terminateClient(ws);
+    }.bind(this));
+
+    ws.on('close',function(){
+      console.log(`客户端 ${ip} 已断开连接`);
+      this._terminateClient(ws);
+    }.bind(this))
+  }
+
+  _terminateClient(ws){
+    this.clientsMap.delete(ws);
+    if (ws.isAlive) { 
+      ws.terminate();
+    }
   }
 
   // Broadcast to all.
@@ -134,8 +149,8 @@ class Server {
     }
 
     switch(res.channel){
-      case 'account':
-        serverChannel.account.pushData(res,this.clientsMap);
+      case 'wallet':
+        serverChannel.wallet.pushData(res,this.clientsMap);
         break;
       case 'market':
         serverChannel.market.pushData(res,this.clientsMap);
@@ -162,7 +177,8 @@ class Server {
   getMapItem(ws,autoNew){
     let mapItem = this.clientsMap.get(ws);
     if(!mapItem && autoNew){
-        mapItem = this.clientsMap.set(ws,{});
+        mapItem = {};
+        this.clientsMap.set(ws,mapItem);
     }
 
     return mapItem;

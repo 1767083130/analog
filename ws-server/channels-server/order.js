@@ -30,9 +30,9 @@ let order = new class {
             return;
         }
 
-        let orders = res.parameters.data;
+        let orders = res.parameters.data,
+            site = res.parameters.site;
         for(let order of orders){
-            let site = order.site;
             order.timestamp = order.timestamp ? +order.timestamp : + new Date();
 
             let mapItem = sitesMap.get(site);
@@ -48,11 +48,11 @@ let order = new class {
         }
         
         if(orders.length > 0){
-            this._broadcastData(orders,clientsMap);
+            this._broadcastData(site,orders,clientsMap);
         }
     }
 
-    _broadcastData(orders,clientsMap){
+    _broadcastData(site,orders,clientsMap){
         for (let item of clientsMap.entries()) {
             let ws = item[0],
                 channels = item[1].channels;
@@ -66,6 +66,7 @@ let order = new class {
             }
 
             let channelData = {
+                site: site,
                 "channel": ChannelName,
                 "success": true,
                 //"errorcode":"",

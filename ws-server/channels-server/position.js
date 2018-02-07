@@ -31,34 +31,37 @@ let position = new class {
         }
 
         let positions = res.parameters.data,
-            newPositions = [];
+            site = res.parameters.site,
+            upgradeSites = new Set();
         for(let position of positions){
-            let site = position.site;
             position.timestamp = position.timestamp ? +position.timestamp : + new Date();
 
             let mapItem = sitesMap.get(site);
             if(!mapItem){
-                sitesMap.set(site,[position]);
+                mapItem = [position];
+                sitesMap.set(site,mapItem);
+                upgradeSites.add(site);
             } else {
                 let index = mapItem.findIndex(p => p.symbol == position.symbol);
                 if(index == -1){
                     mapItem.push(position);
-                    newPositions.push(position);
+                    upgradeSites.add(site);
                 } else {
                     if(mapItem[index].timestamp < position.timestamp){
                         mapItem.splice(index,1,position);
-                        newPositions.push(position);
+                        upgradeSites.add(site);
                     } 
                 }
             }
         }
-        
-        if(newPositions.length > 0){
-            this._broadcastData(newPositions,clientsMap);
+
+        for (let site of upgradeSites.keys()) {
+            let positions = sitesMap.get(site);
+            this._broadcastData(site,positions,clientsMap);
         }
     }
 
-    _broadcastData(positions,clientsMap){
+    _broadcastData(site,positions,clientsMap){
         for (let item of clientsMap.entries()) {
             let ws = item[0],
                 channels = item[1].channels;
@@ -74,6 +77,7 @@ let position = new class {
  
             let channelData = {
                 "channel": ChannelName,
+                "site": site,
                 "success": true,
                 //"errorcode":"",
                 "data": positions

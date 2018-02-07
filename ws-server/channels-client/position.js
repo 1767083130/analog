@@ -15,9 +15,9 @@ let position = new class {
             return;
         }
 
-        let positions = res.data;
+        let positions = res.data,
+            site = res.site;
         for(let position of positions){
-            let site = position.site;
             position.timestamp = position.timestamp ? +position.timestamp : + new Date();
 
             let mapItem = sitesMap.get(site);

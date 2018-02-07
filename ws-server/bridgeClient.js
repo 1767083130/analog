@@ -34,7 +34,7 @@ class BridgeClient {
             platforms = configUtil.getPlatforms();
         platforms.forEach(p => sites.push(p.site));
 
-        sites = ['bitfinex'];
+        sites = ['okex'];
         return {
             appKey: "a",
             appSecret: "b",
@@ -176,6 +176,8 @@ class BridgeClient {
             //处理返回的数据
             client.on('message', function(res){ 
                 //console.log(res);
+                res.site = site;
+
                 switch(res.channel){
                 case 'order':
                     this.orders_reached(res);
@@ -272,6 +274,7 @@ class BridgeClient {
             'event':'push', 
             'channel':'position', 
             'parameters': {
+                'site': e.site,
                 'action': e.action, 
                 'appKey': e.appKey,
                 'data': e.data
@@ -288,6 +291,7 @@ class BridgeClient {
             'event':'push',
             'channel':'wallet',
             'parameters': {
+                'site': e.site,
                 'action': e.action,
                 'appKey': e.appKey,
                 'data': e.data

@@ -20,7 +20,7 @@ let market = new class {
             }
             siteItem.symbols = siteItem.symbols || [];
 
-            let symbolItem = siteItem.symbols.find(p => p.symbol == data.symbol || p.symbol == '*');
+            let symbolItem = siteItem.symbols.find(p => p == data.symbol || p == '*');
             if(!symbolItem){ //不存在
                 siteItem.symbols.push(data.symbol);
             }

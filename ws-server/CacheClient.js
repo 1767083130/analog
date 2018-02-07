@@ -16,7 +16,7 @@ class CacheClient {
     constructor(options){        
         this.options = options || {};
         let defaultOptions = this.getDefaultOptions();
-        Object.assign(this.options,this.options,defaultOptions);
+        Object.assign(this.options,defaultOptions,this.options);
 
         this.client = null;
         this.readyTime = null;

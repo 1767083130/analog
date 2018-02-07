@@ -30,34 +30,37 @@ let market = new class {
         }
 
         let wallet = res.parameters.data,
-            newWallet = [];
+            site = res.parameters.site,
+            upgradeSites = new Set();
         for(let walletItem of wallet){
-            let site = walletItem.site;
             walletItem.timestamp = walletItem.timestamp ? +walletItem.timestamp : + new Date();
 
             let mapItem = sitesMap.get(site);
             if(!mapItem){
-                sitesMap.set(site,[walletItem]);
+                mapItem = [walletItem];
+                sitesMap.set(site,mapItem);
+                upgradeSites.add(site);
             } else {
-                let index = mapItem.findIndex(p => p.coin == walletItem.coin);
+                let index = mapItem.findIndex(p => p.coin == walletItem.coin && p.type == walletItem.type);
                 if(index == -1){
                     mapItem.push(walletItem);
-                    newWallet.push(walletItem);
+                    upgradeSites.add(site);
                 } else {
                     if(mapItem[index].timestamp < walletItem.timestamp){
                         mapItem.splice(index,1,walletItem);
-                        newWallet.push(walletItem);
+                        upgradeSites.add(site);
                     } 
                 }
             }
         }
         
-        if(newWallet.length > 0){
-            this._broadcastData(newWallet,clientsMap);
+        for (let site of upgradeSites.keys()) {
+            let wallet = sitesMap.get(site);
+            this._broadcastData(site,wallet,clientsMap);
         }
     }
 
-    _broadcastData(wallet,clientsMap){
+    _broadcastData(site,wallet,clientsMap){
         for (let item of clientsMap.entries()) {
             let ws = item[0],
                 channels = item[1].channels;
@@ -70,18 +73,17 @@ let market = new class {
                 continue;
             }
             
-            if(newDepths.length > 0){
-                let channelData = {
-                    "channel": ChannelName,
-                    "success": true,
-                    //"errorcode":"",
-                    "data": wallet
-                };
+            let channelData = {
+                "channel": ChannelName,
+                "success": true,
+                "site": site,
+                //"errorcode":"",
+                "data": wallet
+            };
 
-                if (ws.readyState === WebSocket.OPEN) {
-                    ws.send(JSON.stringify(channelData));
-                } 
-            }
+            if (ws.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify(channelData));
+            } 
         }
     }
 

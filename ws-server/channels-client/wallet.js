@@ -11,16 +11,16 @@ let market = new class {
             return;
         }
 
-        let wallet = res.data;
+        let wallet = res.data,
+            site = res.site;
         for(let walletItem of wallet){
-            let site = walletItem.site;
             walletItem.timestamp = walletItem.timestamp ? +walletItem.timestamp : + new Date();
 
             let mapItem = sitesMap.get(site);
             if(!mapItem){
                 sitesMap.set(site,[walletItem]);
             } else {
-                let index = mapItem.findIndex(p => p.coin == walletItem.coin);
+                let index = mapItem.findIndex(p => p.coin == walletItem.coin && p.type == walletItem.type);
                 if(index == -1){
                     mapItem.push(walletItem);
                 } else {
