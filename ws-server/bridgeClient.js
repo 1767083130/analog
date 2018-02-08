@@ -9,7 +9,7 @@ const Client = require('./Client');
 const debug = require('debug')('ws-server:bridgeClient');
 
 const Server_Url = 'ws://localhost:8080/ws';
-const DefaultChannels = ['wallet','position','market']; //'order','wallet','position','market'
+const DefaultChannels = ['order','wallet','position','market']; //'order','wallet','position','market'
 
 /**
  * 桥接客户端
@@ -34,7 +34,6 @@ class BridgeClient {
             platforms = configUtil.getPlatforms();
         platforms.forEach(p => sites.push(p.site));
 
-        sites = ['okex'];
         return {
             appKey: "a",
             appSecret: "b",

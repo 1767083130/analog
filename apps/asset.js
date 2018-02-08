@@ -1,5 +1,7 @@
 'use strict';
 
+/** obsolete **/
+
 const Decimal = require('decimal.js'),
     request = require('supertest'),
     assert = require('assert'),

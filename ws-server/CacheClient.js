@@ -6,6 +6,7 @@ const configUtil = require('./apiClient/configUtil');
 const clientChannel = require('./channels-client');
 const Client = require('./Client');
 const debug = require('debug')('Client:realtime-api');
+const symbolUtil = require('bitcoin-clients').symbolUtil; 
 
 const SITE_NAME = 'pkell';
 const Default_Channels = ['market','order','position','wallet']; 
@@ -137,7 +138,8 @@ class CacheClient {
             console.warn(`有可能没有获取到完整的数据，建议${AdviseDelay}ms后再调用此方法`);
         } 
 
-        return clientChannel.market.getSymbolDepths(site,symbol);
+        let apiSymbol = this.getApiSymbol(site,symbol);
+        return clientChannel.market.getSymbolDepths(site,apiSymbol);
     }
 
     getWalletInfo(site){
@@ -149,6 +151,49 @@ class CacheClient {
         } 
         
         return clientChannel.wallet.getWalletInfo(site);
+    }
+
+    /**
+     * 获取在市场交易种认为价格相等的交易品种
+     * @param {String} site 交易网站 
+     * @param {String} symbol 交易品种 
+     */
+    getApiSymbol(site,symbol){
+        let symbolParts = symbolUtil.getSymbolParts(symbol);
+
+        //{settlementCoin: "cny",targetCoin: "btc", contractType: 'spot',dateCode: "1w"}
+        let newSymbol = symbolUtil.getSymbolByParts({
+            settlementCoin: this.getApiCoin(site,symbolParts.settlementCoin,symbolParts.contractType),
+            targetCoin: this.getApiCoin(site,symbolParts.targetCoin,symbolParts.contractType),
+            contractType: symbolParts.contractType,
+            dateCode: symbolParts.dateCode
+        });
+
+        return newSymbol;
+    }
+
+    /**
+     * 获取在市场交易种认为价格相等的数字货币
+     * @param {String} site 交易网站 
+     * @param {String} coin 数字货币或法定货币 
+     * @param {String} contractType 交易品种类型。spot,现货；futures,期货。
+     */
+    getApiCoin(site,coin,contractType){
+        let typeNum = (contractType == 'spot' ? 1 : 2); 
+        let sitePairs = [
+            //type支持与或运算 //todo
+            { site: "okex", type: 1, pairs: [['usdt','usd']] },
+            { site: "huobi", type: 1, pairs: [['usdt','usd']] },
+            { site: "bitmex", type: 2, pairs: [['xbt','btc']] },
+            { site: "zb", type: 1, pairs: [['usdt','usd']] }
+        ].find( p => p.site == site && (p.type & typeNum == 1));
+        
+        if(!sitePairs){
+            return coin;
+        }
+
+        let pairItem = sitePairs.pairs.find(p => p[1] == coin);
+        return !pairItem ? coin : pairItem[0];
     }
 
     _onSocketError(err){

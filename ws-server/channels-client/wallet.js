@@ -38,7 +38,7 @@ let market = new class {
             return { isSuccess: false, code: "10010", message: `网站${site}账户资产数据不存在`};
         }
 
-        return { isSuccess: true, positions: mapItem };
+        return { isSuccess: true, data: mapItem };
     }
 
 }();

@@ -2,29 +2,27 @@
 
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
-const Account  = mongoose.model('Account');
-const ClientIdentifier  = mongoose.model('ClientIdentifier');
-const TransferStrategy = mongoose.model('TransferStrategy');
-const Strategy = mongoose.model('Strategy');
-
-const async = require('co').wrap;
 const only = require('only');
 const Decimal = require('decimal.js');
+const asset = require('../../lib/asset');
 
 module.exports = function (router) {
   
     /**
-     * 获取账户详情，包括资产情况和单向持有各个币的情况
+     * 获取账户资产详情
+     * http://192.168.0.102:4000/api/asset/getTotalAsset
      */
-    router.get('/getAccountInfo',  async(function* (req, res) {
-        res.json({
-            asset: {
-                total: 34343423,
-                lastTotal: 342432
-            },
-            coins: [
-                { coin: "btc", amount: 10 }, 
-            ]
-        });
-    }));
+    router.get('/getTotalAsset',async function(req, res) {
+        let assetInfo = await asset.getTotalAsset();
+        res.json(assetInfo);
+    });
+
+    /**
+     * 获取用户资产详情
+     * http://192.168.0.102:4000/api/asset/getTotalAsset
+     */
+    router.get('/getTotalAsset',function(req, res) {
+        let userAssetInfo = asset.getUserAsset();
+        res.json(userAssetInfo);
+    });
 }

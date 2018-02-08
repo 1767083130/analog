@@ -6,5 +6,6 @@ module.exports = {
     CacheClient: require('./CacheClient'),
     FuturesApi: require('./apiClient/FuturesApi'),
     BothApi: require('./apiClient/BothApi'),
-    configUtil: require('./apiClient/configUtil')
+    configUtil: require('./apiClient/configUtil'),
+    utilsApi: require('./utilsApi')
 }

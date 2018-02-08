@@ -19,6 +19,7 @@ nunjucks.configure('./public/templates', {
 app.on('start', function () {
     console.log('Application ready to serve requests.');
     console.log('Environment: %s', app.kraken.get('env:env'));
+    console.log('');
 });
 
 module.exports = app;

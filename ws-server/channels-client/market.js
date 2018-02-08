@@ -51,7 +51,7 @@ let market = new class {
             return { isSuccess: false, code: "10010", message: `网站${site}不存在交易品种${symbol ? symbol : '*'}的即时价格信息`};
         }
 
-        return { isSuccess: true, depths: depths };
+        return { isSuccess: true, data: depths };
     }
 
 }();
