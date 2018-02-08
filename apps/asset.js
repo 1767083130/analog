@@ -10,8 +10,6 @@ const Decimal = require('decimal.js'),
     appConfigUtil = require('../lib/utils/configUtil');
 const cacheClient = require('../lib/apiClient/cacheClient').getInstance();
 
-
-
 let datas = []; //e.g {"event":"subscribed","channel":"book","chanId":64,"prec":"P0","freq":"F0","len":"25","pair":"BTCUSD"}
 const SYMBOL = 'btc#cny';
 const platforms = [{ site: "bitfinex", clientType: "client"},
