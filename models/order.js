@@ -9,7 +9,6 @@ const paginate = require('mongoose-paginate');
 /**
  * 交易委托
  */
-
 var orderModel = function () {
     const OrderSchema = mongoose.Schema({
         site: { type: String, required: true }, //平台名称
@@ -67,6 +66,7 @@ var orderModel = function () {
         margin : { type: Number, default: 0 },       // 订单冻结保证金
         processedPrice : { type: Number, default: 0 },         // 成交价格
         timeInForce: { type: String, default: "GoodTillCancel" } , //成交时间限制 "GoodTillCancel"
+        hidden: { type: Boolean, "default": false }, //是否为隐藏单
 
         consignDate: Date, //委托时间
         created: { type: Date, "default": Date.now() }, //创建时间

@@ -1,0 +1,341 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title></title>
+</head>
+<body>
+    <div id="panel" name="panel">
+    </div>
+    <script src="Scripts/jquery-1.8.2.js" type="text/javascript"></script>
+    <script type="text/javascript">
+        debugger
+        /*
+        差价成功率影响因素：
+        最小量
+        转化量
+        失败容忍
+        踏空风险容忍
+        干扰容忍
+        市场短期波动
+
+        短期价格影响因素：
+        市价下单量（从成交量去判断，不能确切判断）
+        限价下单量（可以精准计算）
+        整体市场走势（不能确切判断）
+        消息面（无法把握,但是最终会反映到成交量上面来）
+
+
+        而整体市场走势影响因素： 
+        整体市价下单量（从成交量去判断，不能确切判断）
+        整体限价下单量（可以精准计算）
+        消息面（无法把握,但是最终会反映到成交量上面来）
+        */
+
+        var b1 = [[18, 0.9], [17.9, 1], [17.8, 10], [17.7, 350], [17.6, 350]];
+        var s1 = [[18.1, 0.9], [18.2, 1], [18.3, 10], [18.4, 350], [18.5, 350]];
+
+        //b1 = [ [17.7, 350], [17.6, 350]];
+        //s1 = [ [18.4, 350], [18.5, 350]];
+        var realPrice = {
+            buys: b1,
+            sells: s1
+        };
+
+        var strategy = {
+            ignoreAmount: 15,
+            minProfine: 2, //0.004,
+            tradeType: 0, //0为先进后出
+            maxLoss: 0.04,
+            turnPercent: 20,
+
+            standPrice: 0.02,
+            standAmount: 0.02
+        };
+
+        var res = getRes(strategy, realPrice);
+        setTimeout(retry, 0);
+
+        var logs = [];
+
+        var log = {
+            userName: 'lcm',
+            site: 'btctrade',
+            strategy: strategy,
+            operates: [],
+            status: 'wait', //wait,success,retry,cancel,part_success
+            created: new Date(),
+            modified: new Date(),
+            endTime: new Date()
+        };
+        logs.push(log);
+
+        var logOperate = {
+            id: 1,
+            actionIds: [], //tradeId or transferId
+            tradeType: 'buy',
+            //委托 -> 等待 -> 成交 -> 分批或不分批执行下一步
+            //几种金额的关系 totalAmount >= consignAmount >= actualAmount >= undeal
+            totalAmount: { type: Number }, //需要执行的总金额 
+            undeal: { type: Number }, //这一步已经执行完成,但是下一步未处理的金额 
+            consignAmount: { type: Number }, //委托金额
+            actualAmount: { type: Number }, //实际转币或成交金额
+            price: Number, //委托价格。
+            status: "wait", //wait,success,failed,hand(等待人工处理),assign(已委托),part_success(部分成功)
+            errorMessage: String, //错误信息
+            startTime: Date, //操作开始时间
+            endTime: Date    //操作结束时间
+        };
+        log.operates.push(logOperate);
+
+        /**
+         * 监控正在执行中的策略
+         * @param {Array} log,策略执行日志
+         * 
+         * @returns 
+         */
+        function watchLog(log) {
+            //wait,success,retry,cancel,part_success
+            if (['wait', 'part_success'].indexOf(log.status) == -1
+                 || log.operates.length == 0) {
+                return { isRun: false, message: '不满足条件' };
+            }
+
+            /*
+            处于第一步时，
+            1、如果已经不满足条件，撤销，否则，下一步;
+            2、如果价量变化大 (1)价格变化大，撤销或重提交 (2)量变化大，如果量变得过小，则撤销。
+               否则，下一步；
+            3、如果外部环境因素发生变化（比如隔壁平台剧烈波动），下个版本考虑.
+
+            处于第二步时，
+            1、如果有利于回撤的单撤销到一定程度，直接进行回撤委托，否则，下一步;
+            2、如果回撤时价格过高，那就提醒人工处理，否则，下一步；
+            3、如果阻碍成交的单撤销到一定程度，撤单后，减价重新委托，否则，下一步;
+            4、如果阻碍成交的单增加一定程度，撤单后，加价重新委托，否则，下一步;
+            5、如果外部环境因素发生变化（比如隔壁平台剧烈波动），下个版本考虑.
+            */
+
+            var strategy = log.strategy,
+                operates = log.operates;
+            var trade = getRes(log.strategy, realPrice, log);
+
+            for (var i = 0; i < operates.length; i++) {
+                var operate = operates[i];
+
+                var stillStand = true;
+                if (strategy.tradeType == 0 && ((log.amount - trade.amount) * 100 / trade.amount > strategy.standAmount
+                                                        || (log.price - trade.price) * 100 / trade.price > strategy.standPrice)
+                           || strategy.tradeType != 0 && ((log.amount - trade.amount) * 100 / trade.amount > strategy.standAmount
+                                                        || (log.price - trade.price) * 100 / trade.price > strategy.standPrice)) 
+                {
+                    //条件还满足，但是更改幅度过大需要重新发起请求
+                    stillStand = false;
+                }
+
+                if (stillStand) {
+                    continue;
+                }
+                
+                // 只会有3种操作：（1）撤销 （2）重新提交 （3）失败搁置。硬是要说第四种的话，（4）不变
+                if (operate.step == 1) {
+                    //考虑两种操作：（1）撤销 （2）重新提交
+                    //（1）撤销：条件不再满足  
+                    //   撤销操作有3个情况：（1）对于已经委托但尚未成交的，需要撤销委托
+                    //                  （2）对于没有委托的，更改状态防止后面委托
+                    //                  （3）对于委托成功的，更改价格重新发起委托，尽快收回筹码
+                    //（2）重新提交: 如果数量或价格变动过大时，需要重新提交
+                    
+                      
+
+                } else { //step == 2
+                    //考虑两种操作：（1）重新提交 （2）搁置
+                    //重新提交: 
+                    //搁置:
+
+                    //还必须要盯住上面和下面的
+                }
+            }
+
+        }
+
+        var logOperate = {
+            id: 1,
+            actionIds: [], //tradeId or transferId
+            //委托 -> 等待 -> 成交 -> 分批或不分批执行下一步
+            //几种金额的关系 totalAmount >= consignAmount >= actualAmount >= undeal
+            totalAmount: { type: Number }, //需要执行的总金额 
+            undeal: { type: Number }, //这一步已经执行完成,但是下一步未处理的金额 
+            consignAmount: { type: Number }, //委托金额
+            actualAmount: { type: Number }, //实际转币或成交金额
+            price: Number, //委托价格。
+            status: "wait", //wait,success,failed,hand(等待人工处理),assign(已委托),part_success(部分成功)
+            errorMessage: String, //错误信息
+            startTime: Date, //操作开始时间
+            endTime: Date    //操作结束时间
+        };
+        log.operates.push(logOperate);
+
+        /**
+         * 获取需要排除的价格档
+         * @param {Array} logs,策略执行日志
+         * 
+         * @returns 需要排除的价格档。e.g. [{ amount: 120,price: 98 },{ amount: 23,price: 87 }]
+         */
+        function getExceptItems(logs) {
+            var exceptItems = {
+                buys: [],
+                sells: []
+            };
+
+            for (var i = 0; i < logs.length; i++) {
+                var log = logs[i];
+                for (var j = 0; j < log.operates; j++) {
+                    var operate = log.operates[j];
+                    var leftAmount = operate.consignAmount - operate.actualAmount;//未成交
+                    if (leftAmount > 0) {
+                        var item = { amount: leftAmount,price: operate.price };
+                        if (operate.tradeType == 'buy') {
+                            exceptItems.buys.push(item);
+                        } else {
+                            exceptItems.sells.push(item);
+                        }
+                    }
+                }
+            }
+
+            return exceptItems;
+        }
+
+        /**
+         * 排除价格档
+         * @param {Array} priceSteps,需要被排除的源价格档
+         *    e.g. [{ amount: 120,price: 98 },{ amount: 23,price: 87 }]
+         * @param {Array} exceptSteps,需要排除的价格档 
+         *    e.g. [{ amount: 120,price: 98 },{ amount: 23,price: 87 }]
+         * 
+         * @returns 需要排除的价格档。 e.g.
+         * [{ amount: 120,price: 98 },{ amount: 23,price: 87 }]
+         */
+        function exceptPriceSteps(priceSteps, exceptSteps) {
+            var getTradeStep = function (items, price) {
+                var itemFound;
+                for (var j = 0; j < items.length; j++) {
+                    if (items[j].price == price) {
+                        itemFound = items[j];
+                        break;
+                    }
+                }
+
+                return itemFound;
+            }
+
+            for (var i = 0; i < exceptSteps.length; i++) {
+                var exceptStep = exceptSteps[i];
+                var step = getTradeStep(priceSteps, exceptStep.price);
+
+                if (step) {
+                    step.amount = step.amount - exceptStep.amount;
+                    if (step.amount < 0) {
+                        step.amount = 0;
+                    }
+                } 
+            }
+
+            return priceSteps;
+        }
+
+
+        /**
+         * 获取策略当前可以进行的委托详情
+         * @param {BetweenStrategy} strategy,策略
+         *
+         * @returns 当前可以进行的委托详情。 e.g. { amount: 2324,price: 56 }
+         */
+        function getMarketResult(strategy) {
+            var logs = []; //todo 获取没有完成的
+            var exceptItems = getExceptItems(logs);
+            var realPrice = {}; //todo 获取即时行情
+
+            var res = _getMarketResult(strategy, realPrice, exceptItems);
+            return res;
+        }
+
+        /**
+         * 获取策略当前可以进行的委托详情
+         * @param {BetweenStrategy} strategy,策略
+         * @param {RealTimePrice} realPrice,实时市场价格 e.g. { buys: [],sells: [] }
+         *    e.g. [{ amount: 120,price: 98 },{ amount: 23,price: 87 }]
+         * @param {Array} exceptItems,需要排除的价格档 e.g. [{ amount: 120,price: 98 },{ amount: 23,price: 87 }]
+         * 
+         * @returns 当前可以进行的委托详情。 e.g. { amount: 2324,price: 56 }
+         */
+        function _getMarketResult(strategy, realPrice, exceptItems) {
+            var upAmount = 0.001;
+
+            var b1 = realPrice.buys,
+                s1 = realPrice.sells;
+
+            exceptPriceSteps(b1, exceptItems.buys || []);
+            exceptPriceSteps(s1, exceptItems.sells || []);
+
+            ////必须排除自家的
+            //var exceptItems = { sells/buys: [{
+            //    tradeType: 'buy',
+            //    price: 0,
+            //    amount: 0
+            //}]};
+
+            var a = (strategy.tradeType == 0 ? s1 : b1);
+            var b = (strategy.tradeType == 0 ? b1 : s1);
+            var total = 0, p;
+            for (var i = 0; i < a.length; i++) {
+                total += a[i][1];
+                if (strategy.ignoreAmount < total) {
+                    p = i;
+                    break;
+                }
+            }
+            var p1 = p ? a[p][0] : a[0][0];
+            p1 = (strategy.tradeType == 0 ? p1 - upAmount : p1 + upAmount);
+
+            var marketTotal = 0, start = false;
+            total = 0, p = 0;
+            for (var j = 0; j < b.length; j++) {
+                total += b[j][1];
+                if (strategy.ignoreAmount >= total) {
+                    var profine1 = Math.abs(b[j][0] - p1) * 100 / b[j][0];
+                    if (profine1 >= strategy.minProfine) {
+                        marketTotal += b[j][1];
+                    }
+                } else {
+                    if (!start) {
+                        p = j;
+                    }
+                    start = true;
+                }
+
+                if (start) {
+                    var t = b[p][0];
+                    var stepLoss = Math.abs(b[j][0] - t) * 100 / t;
+                    if (stepLoss <= strategy.maxLoss) {
+                        marketTotal += b[j][1];
+                    }
+                }
+            }
+
+
+            var p2 = start ? b1[p][0] : b1[0][0];
+            p2 = (strategy.tradeType == 0 ? p2 + upAmount : p2 - upAmount);
+            var total2 = marketTotal * strategy.turnPercent / 100;
+            var trade = {
+                amount: total2,
+                price: p2
+            };
+
+            return trade;
+        }
+
+    </script>
+
+</body>
+</html>

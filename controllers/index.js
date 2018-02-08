@@ -9,6 +9,8 @@ const Strategy = mongoose.model('Strategy');
 
 const async = require('co').wrap;
 const only = require('only');
+const accountLib = require('../lib/account');
+const configUtil = require('../lib/utils/configUtil');
 const Decimal = require('decimal.js');
 
 module.exports = function (router) {
@@ -16,7 +18,21 @@ module.exports = function (router) {
   
     router.get('/',  async(function* (req, res) {
         let userName = req.user.userName;
-        let accounts,clients ,transferStrategys , business, strategy;
+        let accounts = yield Account.getUserAccounts(userName);
+        let clients = yield ClientIdentifier.getUserClients(userName);
+        let transferStrategys = yield TransferStrategy.getUserStrategy(userName);
+        
+        let business = configUtil.getBusiness();
+        business.sites = configUtil.getSites();
+        business.symbols = configUtil.getSymbols();
+
+        for(let account of accounts){
+            for(let coin of account.coins){
+                coin.available = new Decimal(coin.total).plus(coin.frozen).toNumber();
+            }
+        }
+
+        let strategy = yield Strategy.getUserStrategy(userName);
 
         // var clientId = clients[0]._id;
         // var timeStamp = clientId.getTimestamp();
@@ -45,6 +61,8 @@ module.exports = function (router) {
         req.logout();
         res.redirect('/login');
     });
+
+
 };
 
 
