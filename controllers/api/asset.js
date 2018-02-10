@@ -10,19 +10,27 @@ module.exports = function (router) {
   
     /**
      * 获取账户资产详情
-     * http://192.168.0.102:4000/api/asset/getTotalAsset
+     * http://localhost:4000/api/asset/getTotalAsset
      */
     router.get('/getTotalAsset',async function(req, res) {
-        let assetInfo = await asset.getTotalAsset();
-        res.json(assetInfo);
+        try{
+            let assetInfo = await asset.getTotalAsset();
+            res.json(assetInfo);
+        } catch (err){
+            res.json({ isSuccess: false, message: "系统发生错误" });
+        }
     });
 
     /**
      * 获取用户资产详情
-     * http://192.168.0.102:4000/api/asset/getTotalAsset
+     * http://localhost:4000/api/asset/getUserAsset
      */
-    router.get('/getTotalAsset',function(req, res) {
-        let userAssetInfo = asset.getUserAsset();
-        res.json(userAssetInfo);
+    router.get('/getUserAsset',async function(req, res) {
+        try{
+            let userAssetInfo = await asset.getUserAsset();
+            res.json(userAssetInfo);
+        } catch (err){
+            res.json({ isSuccess: false, message: "系统发生错误" });
+        }
     });
 }

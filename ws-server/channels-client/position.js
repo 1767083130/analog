@@ -42,15 +42,21 @@ let position = new class {
      * @param {String} [symbol] 交易品种，如果为空，则获取全部项 
      */
     getPositions(site,symbol){
+        let notFoundRes = { isSuccess: false, code: "10010", message: `网站${site}不存在交易品种${symbol ? symbol : '*'}的仓位信息`};
         let mapItem = sitesMap.get(site);
         if(!mapItem){
-            return { isSuccess: false, code: "10010", message: `网站${site}不存在交易品种${symbol ? symbol : '*'}的仓位信息`};
+            return notFoundRes;
         }
 
-        let positions = symbol ? mapItem.find(p => p.symbol == symbol) : mapItem;
-        if(!positions){
-            return { isSuccess: false, code: "10010", message: `网站${site}不存在交易品种${symbol ? symbol : '*'}的仓位信息`};
-        }
+        let positions = mapItem;
+        if(symbol){
+            let symbolPosition = mapItem.find(p => p.symbol == symbol);
+            if(!symbolPosition){
+                return notFoundRes; 
+            } else {
+                positions = symbolPosition;
+            }
+        } 
 
         return { isSuccess: true, data: positions };
     }

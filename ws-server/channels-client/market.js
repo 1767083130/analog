@@ -41,16 +41,22 @@ let market = new class {
      * @param {String} [symbol] 交易品种,如果为空，则获取全部品种
      */
     getSymbolDepths(site,symbol){
+        let notFoundRes = { isSuccess: false,  message: `网站${site}不存在交易品种${symbol ? symbol : '*'}的即时价格信息`};
         let mapItem = sitesMap.get(site);
         if(!mapItem){
-            return { isSuccess: false, code: "10010", message: `网站${site}不存在交易品种${symbol ? symbol : '*'}的即时价格信息`};
+            return notFoundRes;
         }
 
-        let depths = symbol ? mapItem.find(p => p.symbol == symbol) : mapItem;
-        if(!depths){
-            return { isSuccess: false, code: "10010", message: `网站${site}不存在交易品种${symbol ? symbol : '*'}的即时价格信息`};
-        }
-
+        let depths = mapItem;
+        if(symbol){
+            let symbolDepth = mapItem.find(p => p.symbol == symbol);
+            if(!symbolDepth){
+                return notFoundRes; 
+            } else {
+                depths = symbolDepth;
+            }
+        } 
+        
         return { isSuccess: true, data: depths };
     }
 

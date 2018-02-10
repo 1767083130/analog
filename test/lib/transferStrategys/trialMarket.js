@@ -6,7 +6,7 @@ const assert = require('assert');
 const Decimal = require('decimal.js');
 const mongoose = require('mongoose');
 
-describe.only('支付测试. path: transferStrategys/trialMarket.js', function () {
+describe('支付测试. path: transferStrategys/trialMarket.js', function () {
 
     //有比较耗时间的测试，设置每个测试的过期时间为1分钟
     //this.timeout(1 * 60 * 1000);
@@ -19,7 +19,7 @@ describe.only('支付测试. path: transferStrategys/trialMarket.js', function (
         done();
     })
 
-    it.only('trialNoLimit ', function (done) {
+    it('trialNoLimit ', function (done) {
         co(function *(){
             let realPrices,itemsRes;
             let siteA = 'baidu',siteB = 'qq';

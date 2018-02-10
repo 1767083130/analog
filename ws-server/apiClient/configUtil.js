@@ -68,6 +68,13 @@ let configUtil = new class {
     }
 
     /**
+     * 获取系统牵涉到的所有法币
+     */
+    getPaperCurrencys(){
+        return ['usd','usdt','cny','eur','jpy','qc','aed'];
+    }
+
+    /**
      * 获取执行api的方法。返回可选值：["restful","socket","none"]
      * 
      * @param {String} site,网站名称

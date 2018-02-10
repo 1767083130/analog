@@ -16,37 +16,44 @@ describe('币种即时价格. path: realTimePrice.js', function () {
         done();
     });
 
-    it('getSyncRealPrices 直接从网站同步获取多个网站多个币种的即时价格', function (done) {
-        co(function *(){
-            //现货 
-            let realPrice = yield* realTimePrice.getSyncRealPrices(['btctrade'],['btc#cny']);
-            assert.equal(realPrice.length == 1,true);
+    // it.only('getSymbolPricePaths', function (done) {
+    //     let symbols = ['btc#usd','eth#btc'],
+    //         symbol = "eth#usd";
+        
+    //     realTimePrice._getSymbolPricePaths(symbol,symbols);
+    // });
 
-            //期货
-            realPrice = yield* realTimePrice.getSyncRealPrices(['bitvc'],['btc#cny_7d']);
-            assert.equal(realPrice.length == 1,true);
+    // it('getSyncRealPrices 直接从网站同步获取多个网站多个币种的即时价格', function (done) {
+    //     co(function *(){
+    //         //现货 
+    //         let realPrice = yield* realTimePrice.getSyncRealPrices(['btctrade'],['btc#cny']);
+    //         assert.equal(realPrice.length == 1,true);
 
-            done();
-        }).catch(function(e){
-            done(e);
-        });
-    });
+    //         //期货
+    //         realPrice = yield* realTimePrice.getSyncRealPrices(['bitvc'],['btc#cny_7d']);
+    //         assert.equal(realPrice.length == 1,true);
 
-    it('getRealPrice 获取即时价格', function (done) {
-        co(function *(){
-            //现货 
-            let realPrice = yield* realTimePrice.getRealPrice('chbtc','btc#cny');
-            assert.equal(realPrice.buys.length > 0,true);
+    //         done();
+    //     }).catch(function(e){
+    //         done(e);
+    //     });
+    // });
 
-            //期货
-            realPrice = yield* realTimePrice.getRealPrice('bitvc','btc#cny_7d');
-            assert.equal(realPrice.buys.length > 0,true);
+    // it('getRealPrice 获取即时价格', function (done) {
+    //     co(function *(){
+    //         //现货 
+    //         let realPrice = yield* realTimePrice.getRealPrice('chbtc','btc#cny');
+    //         assert.equal(realPrice.buys.length > 0,true);
 
-            done();
-        }).catch(function(e){
-            done(e);
-        });
-    });
+    //         //期货
+    //         realPrice = yield* realTimePrice.getRealPrice('bitvc','btc#cny_7d');
+    //         assert.equal(realPrice.buys.length > 0,true);
+
+    //         done();
+    //     }).catch(function(e){
+    //         done(e);
+    //     });
+    // });
 
 
 

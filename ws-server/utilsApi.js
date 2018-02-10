@@ -1,4 +1,5 @@
 'use strict';
+const configUtil = require('./apiClient/configUtil');
 
 let utilsApi = new class{
     /**
@@ -12,8 +13,12 @@ let utilsApi = new class{
             method: "GET" 
         };
         let apiRes = await api.execute(apiName,options);
-        return apiRes.body.rate;
+        if(!apiRes.isSuccess){
+            return apiRes;
+        }
+        return { isSuccess: apiRes.isSuccess, rate: apiRes.body.rate };
     }
+
 
     /**
      * 获取交易网站api调用接口。特别注意的是，这个接口外部不能再调用，有可能带来安全隐患 //TODO
@@ -40,7 +45,7 @@ let utilsApi = new class{
         if(!siteClient){
             throw new Error(`不支持的交易网站:${site}`);
         }
-        let Client = siteClient.api;
+        let Client = siteClient.futuresApi;
         if(!Client){
             throw new Error(`不支持的交易网站:${site}`);
         }

@@ -15,8 +15,14 @@ describe('币种即时价格. path: realTimePrice.js', function () {
         done();
     });
 
+    it.only('getSymbolPaths', function (done) {
+        let symbols = ['btc#usd','eth#btc'],
+            symbol = "eth#usd";
+        
+        let res = symbolPriceUtil.getSymbolPaths(symbol,symbols);
+    });
 
-    it.only('getMarketPrice 获取在某个网站中，卖出一定数量的交易品种，市场能给出的价格', function (done) {
+    it('getMarketPrice 获取在某个网站中，卖出一定数量的交易品种，市场能给出的价格', function (done) {
         co(function *(){
             // /**
             //  * 获取在某个网站中，卖出一定数量的交易品种，市场能给出的价格

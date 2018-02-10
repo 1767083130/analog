@@ -53,10 +53,6 @@ var config = {
     platforms: [
         {
             site: "okex",
-            identifiers: [{ 
-                appKey: "1230a5dc-42d4-4195-b414-30fedb232b3e",
-                appSecret: "070204F726864DCE18C1258656162EFD"
-            }],
             autoTransfer: false,
             symbols: [
                 /* NOTICE：因为"_"是系统保留字符，字段alias的交割日期部分使用“-”代替了交易网站中的"_",如“this_week”被替换成了"this-week" */
@@ -99,10 +95,6 @@ var config = {
         {
             //bitmex  bitmex.com
             site: "bitmex",
-            identifiers: [{
-                appKey: "Agyo4pwZzZAVrDjHGpkLbDwz",
-                appSecret: "Jpdy1F1kDnmKEjiJdhhT2p7bVQY9GBTM6YPWxElBbjWssln7"
-            }],
             autoTransfer: false,
             coins: [{ coin: "btc", payFee: 0.0001, alias: "XBT"}],
             symbols: [
@@ -196,12 +188,6 @@ var config = {
 
         {         
             site: "huobi",
-            identifiers: [
-                {
-                    appKey: "ff01de28-2c1edde4-1d578373-f0373",
-                    appSecret: "b7be20ee-75f30365-da5974f8-4f083"
-                }
-            ],
             autoTransfer: true, //是否支持自动转币
             symbols: [{ symbol: "btc#cny", tradeFee: ['0.2%', '0.2%'], fee: 0.0001, test: true }, { symbol: "ltc#cny", tradeFee: ['0.2%', '0.2%'], payFee: 0.001}], //支持的货币
             restUrl: "https://api.huobi.com/apiv3",
@@ -218,10 +204,6 @@ var config = {
         },
         {
             site: "okcoin",
-            identifiers: [{
-                appKey: "a",
-                appSecret: "0123456789abcdef"
-            }],
             autoTransfer: false,
             symbols: [{ symbol: "btc#cny", payFee: 0.0001 }, { symbol: "ltc#cny", payFee: 0.001}],
             restUrl: "https://www.okcoin.cn/api/v1",
@@ -237,10 +219,6 @@ var config = {
         },
         {
             site: "okcoin_com",
-            identifiers: [{
-                appKey: "a49cb4b1-f5bf-438b-9137-4ce1d4763edf",
-                appSecret: "5CCA8A7A89B451A6235285723E5039D8"
-            }],
             autoTransfer: false,
             symbols: [
                 /* NOTICE：因为"_"是系统保留字符，字段alias的交割日期部分使用“-”代替了交易网站中的"_",如“this_week”被替换成了"this-week" */
@@ -262,12 +240,6 @@ var config = {
         {
             //比特币交易网 btctrade.com
             site: "btctrade",
-            identifiers: [
-                {
-                    appKey: "3frrr-rpuiq-pwtxa-uxdvc-ka4p1-768gg-uiwja",
-                    appSecret: "Qq!D.-ScVC6-~n$vc-r!AAR-BQ,S9-nERf5-(/v^q"
-                }
-            ],
             autoTransfer: false,
             symbols: [{ symbol: "btc#cny", payFee: 0.0001 }, { symbol: "ltc#cny", payFee: 0.001 }, { symbol: "eth#cny", payFee: 0.01}],
             restUrl: "http://api.btctrade.com",
@@ -284,12 +256,6 @@ var config = {
         {
             //中国比特币 chbtc.com
             site: "chbtc",
-            identifiers: [
-                {
-                    appKey: "bda2fe0d-30f1-4e00-8d0c-bf721629b2a2",
-                    appSecret: "c0175071-bd51-45ed-a6bd-915cf61ae8ad"
-                }
-            ],
             autoTransfer: true,
             symbols: [{ symbol: "btc#cny", payFee: 0.0001 }, { symbol: "ltc#cny", payFee: 0.001 }, { symbol: "eth#cny", payFee: 0.01}, { symbol: "etc#cny", payFee: 0.01}],
             restUrl: "https://trade.chbtc.com/api/",
@@ -306,10 +272,6 @@ var config = {
         {
             //云币网 yunbi.com
             site: "yunbi",
-            identifiers: [{
-                appKey: "Ac1OtpQRDYEb0n6iCpDq2lAbgQvepxd030w3ZpN5",
-                appSecret: "FOAaxLBuiW1icRGfzifBOOXE6Z7EFMqx6C8MCUgN"
-            }],
             autoTransfer: true,
             symbols: [{ symbol: "btc#cny", payFee: 0.0001 }, { symbol: "eth#cny", payFee: 0.01}],
             restUrl: "https://yunbi.com/",
@@ -326,10 +288,6 @@ var config = {
         {
             //poloniex网 poloniex.com
             site: "poloniex",
-            identifiers: [{
-                appKey: "K80HI3LP-DVJBC7HT-RPRMAOTB-J5OWKBTV",
-                appSecret: "9630538c1693a989749a8cf672d49c7cd9cc639f62fb12d4c64beac62e738922f5facb1fcee5b2df5f8c0efa5e00a04bc973e5ba3841520b0536ab2ac17414df"
-            }],
             autoTransfer: false,
             symbols: [{ symbol: "btc#cny", payFee: 0.0001 }, { symbol: "eth#cny", payFee: 0.01}],
             restUrl: "https://poloniex.com",
@@ -346,10 +304,6 @@ var config = {
         {
             //bitvc bitvc.com
             site: "bitvc",
-            identifiers: [{
-                appKey: "57069551-0185269d-3aa4dfa5-49c2a86a",
-                appSecret: "b814f982-c16ce365-35aec429-69e50033"
-            }],
             autoTransfer: false,
             coins: [{ coin: "btc", payFee: 0.0001}],
             symbols: [{symbol: "btc#cny_1w", test: true, payFee: 1, settlementFee: 1, tradeFee: { maker_buy: 1}}], //期货
@@ -370,10 +324,6 @@ var config = {
         {
             //quoine
             site: "quoine",
-            identifiers: [{
-                appKey: "64996",
-                appSecret: "aJbHQUT8m50ggOOXruf4WVKt4j2lDuquyJzrDDygNJlC/Acy8qRby1TlDZYu/XhEEN7uw6Trr3RMC8MxVj4W2g=="
-            }],
             autoTransfer: false,
             symbols: [{ symbol: "btc#cny", payFee: 0.0001 }, { symbol: "eth#cny", payFee: 0.01 },
                         { symbol: "btc#cny_7d", tradeFee: { maker_buy: 0}}],
@@ -393,10 +343,6 @@ var config = {
         {
             //bitflyer  bitflyer.com
             site: "bitflyer",
-            identifiers: [{
-                appKey: "64996",
-                appSecret: "aJbHQUT8m50ggOOXruf4WVKt4j2lDuquyJzrDDygNJlC/Acy8qRby1TlDZYu/XhEEN7uw6Trr3RMC8MxVj4W2g=="
-            }],
             autoTransfer: false,
             symbols: [{ symbol: "btc#cny", payFee: 0.0001 }, { symbol: "eth#cny", payFee: 0.01 }, //culture
                         {symbol: "btc#cny_7d", tradeFee: { maker_buy: 0}}], //futures
